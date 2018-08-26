@@ -25,15 +25,15 @@
   Hint: Type iris_train
 
 - Class: cmd_question
-  Output: "Notice that we need to perform some cleaning to the training dataset before it can be passed to the `knn` function as an argument – we need to exclude the 'Species' and 'id' columns from the data. We can use dplyr's `select` function to achieve this. Type the command and assign the returned value to `train`:"
-  CorrectAnswer: train <- iris_train %>% select(-Species, -id)
-  AnswerTests: any_of_exprs('train <- iris_train %>% select(-Species, -id)', 'train <- select(iris_train, -Species, -id)');expr_creates_var('train')
-  Hint: Assign the returned result of `iris_train %>% select(-Species, -id)` to `train`
+  Output: "Notice that we need to perform some cleaning to the training dataset before it can be passed to the `knn` function as an argument – we need to exclude the 'Species' column from the data. We can use dplyr's `select` function to achieve this. Type the command and assign the returned value to `train`:"
+  CorrectAnswer: train <- iris_train %>% select(-Species)
+  AnswerTests: any_of_exprs('train <- iris_train %>% select(-Species)', 'train <- select(iris_train, -Species)');expr_creates_var('train')
+  Hint: Assign the returned result of `iris_train %>% select(-Species)` to `train`
 
 - Class: cmd_question
   Output: "Do the same clean-up to iris_test, and assign the resulting tibble to a variable named `test`:"
-  CorrectAnswer: test <- iris_test %>% select(-Species, -id)
-  AnswerTests: any_of_exprs('test <- iris_test %>% select(-Species, -id)', 'test <- select(iris_test, -Species, -id)');expr_creates_var('test')
+  CorrectAnswer: test <- iris_test %>% select(-Species)
+  AnswerTests: any_of_exprs('test <- iris_test %>% select(-Species)', 'test <- select(iris_test, -Species)');expr_creates_var('test')
   Hint: See the answer to previous question
 
 - Class: cmd_question
@@ -57,4 +57,41 @@
 - Class: text
   Output: "As we can see, our simple knn model performs quite well on the test dataset. Consider the following question: when is it useful to know the accuracy on the training dataset?"
 
+- Class: cmd_question
+  Output: "Next, let's build a Naive Bayes model using the package `e1071`. Type the command to import the package e1071:"
+  CorrectAnswer: library(e1071)
+  AnswerTests: omnitest(correctExpr='library(e1071)')
+  Hint: Try library(e1071)
 
+- Class: cmd_question
+  Output: "Open the help documentation of the function `naiveBayes` that comes with the e1071 package:"
+  CorrectAnswer: ?naiveBayes
+  AnswerTests: any_of_exprs('?naiveBayes', 'help(naiveBayes)')
+  Hint: Try ?naiveBayes
+
+- Class: cmd_question
+  Output: "Now invoke the function `naiveBayes` to build a classification model with `data = iris_train`, and assign the returned model to variable `model_nb`"
+  CorrectAnswer: model_nb <- naiveBayes(Species ~ ., data=iris_train)
+  AnswerTests: omnitest(correctExpr='model_nb <- naiveBayes(Species ~ ., data=iris_train)')
+  Hint: Take a look at the "Examples" section of the naiveBayes help documentation. Remember to assign the returned value to `model_nb`
+
+- Class: cmd_question
+  Output: "With our NB model, now we can predict the Species of the samples in the test dataset. Use function `predict`, which takes the model as the first argument, and iris_test without the Species column as the second argument. Assigned the returned value to variable named `test_pred_nb`"
+  CorrectAnswer: test_pred_nb <- predict(model_nb, select(iris_test, -Species))
+  AnswerTests: any_of_exprs('test_pred_nb <- predict(model_nb, select(iris_test, -Species))', 'test_pred_nb <- predict(model_nb, iris_test)', 'test_pred_nb <- predict(model_nb, iris_test %>% select(-Species))', 'test_pred_nb <- predict(model_nb, test)')
+  Hint: Try predict(model_nb, select(iris_test, -Species)). Remember to assign the returned value to `test_pred_nb`
+
+- Class: cmd_question
+  Output: "How did we do in terms of prediction accuracy with our NB model? Calculate the accuracy using the function `mean`, by comparing `test_pred_nb` to `iris_test$Species`:"
+  CorrectAnswer: mean(test_pred_nb == iris_test$Species)
+  AnswerTests: omnitest(correctExpr='mean(test_pred_nb == iris_test$Species)')
+  Hint: Recall how we calculated the accuracy for our knn model
+
+- Class: cmd_question
+  Output: "Similarly, calculate the prediction accuracy of the NB model on the training dataset. Feel free to use the variable `train` we created earlier"
+  CorrectAnswer: mean(predict(model_nb, train) == iris_train$Species)
+  AnswerTests: any_of_exprs('mean(predict(model_nb, iris_train) == iris_train$Species)', 'mean(predict(model_nb, select(iris_train, -Species)) == iris_train$Species)', 'mean(predict(model_nb, iris_train %>% select(-Species)) == iris_train$Species)', 'mean(predict(model_nb, train) == iris_train$Species)')
+  Hint: predict(model_nb, train) will return predictions on the training dataset. Compare the predictions to iris_train$Species and use `mean` to calculate accuracy.
+
+- Class: text
+  Output: The function `naiveBayes` takes an optional parameter called `laplace`. By default it's set to 0, which is equivalent to not having laplace smoothing at all. When is laplace smoothing necessary? What's a good value for laplace when it is necessary?
