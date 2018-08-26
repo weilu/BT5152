@@ -1,0 +1,61 @@
+- Class: meta
+  Course: BT5152 Tutorial 1
+  Lesson: Train Test Split
+  Author: Wei Lu
+  Type: Standard
+  Organization: National University of Singapore
+  Version: 2.4.3
+
+- Class: text
+  Output: In this lesson, we'll learn how to load a dataset, split it into training and testing sets; build simple classification models such as KNN, Naive Bayes, and Decision Tree using the training dataset, and output accuracies on the training and testing dataset.
+
+- Class: cmd_question
+  Output: To start, let's first load a built-in dataset into memory, type data(iris)
+  CorrectAnswer: data(iris)
+  AnswerTests: omnitest(correctExpr='data(iris)')
+  Hint: Type data(iris)
+
+- Class: cmd_question
+  Output: Now, let's have a quick look at the dataset we just loaded, type summary(iris)
+  CorrectAnswer: summary(iris)
+  AnswerTests: omnitest(correctExpr='summary(iris)')
+  Hint: Type summary(iris)
+
+- Class: cmd_question
+  Output: Type a command to inspect the first few samples from this dataset
+  CorrectAnswer: head(iris)
+  AnswerTests: omnitest(correctExpr='head(iris)')
+  Hint: ?head
+
+- Class: text
+  Output: Our goal is to build a classification model to predict the species of a given iris flower, based on features including sepal length, sepal width, petal length, and petal width.
+
+- Class: cmd_question
+  Output: Type a command to find out how many samples are there in the iris dataset
+  CorrectAnswer: nrow(iris)
+  AnswerTests: omnitest(correctExpr='nrow(iris)')
+  Hint: ?nrow
+
+- Class: mult_question
+  Output: "Say we want to split the dataset to have 100 samples in training set and 50 in testing set. One way to do this is to subset the data as such:\n\n  iris_train <- iris[1:100, ]\n\n  iris_test <- iris[101:150, ]\n\nWhat's the biggest problem with this approach?"
+  AnswerChoices:
+    Too many samples in training set; Too few samples in training set; Training and testing set samples have different distributions for the Species variable
+  CorrectAnswer: Training and testing set samples have different distributions for the Species variable
+  AnswerTests: omnitest(correctVal='Training and testing set samples have different distributions for the Species variable')
+  Hint: Type iris$Species. What do you see?
+
+- Class: cmd_question
+  Output: "One way to deal with this problem is to shuffle the whole dataset before subsetting our training and testing sets. Type iris_data <- iris[sample(nrow(iris)), ]"
+  CorrectAnswer: "iris_data <- iris[sample(nrow(iris)), ]"
+  AnswerTests: "omnitest(correctExpr='iris_data <- iris[sample(nrow(iris)), ]')"
+  Hint: "Type iris_data <- iris[sample(nrow(iris)), ]"
+
+- Class: cmd_question
+  Output: Usually, for reproducibility of our scripts, we set a random state seed before invoking a function such as `sample`. Type set.seed(42)
+  CorrectAnswer: set.seed(42)
+  AnswerTests: omnitest(correctExpr='set.seed(42)')
+  Hint: Type set.seed(42)
+
+- Class: text
+  Output: "To put everything together, we can split the dataset to train and test with the following code:\n\n  set.seed(42)\n\n  iris_data <- iris[sample(nrow(iris)), ]\n\n  iris_train <- iris_data[1:100, ]\n\n  iris_test <- iris_data[101:150, ]"
+
