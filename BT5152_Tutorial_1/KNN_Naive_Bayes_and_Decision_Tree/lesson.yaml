@@ -1,0 +1,60 @@
+- Class: meta
+  Course: BT5152 Tutorial 1
+  Lesson: KNN Naive Bayes and Decision Tree
+  Author: Wei Lu
+  Type: Standard
+  Organization: National University of Singapore
+  Version: 2.4.3
+
+- Class: text
+  Output: In this lesson, we'll learn how to build simple classification models such as KNN, Naive Bayes, and Decision Tree using the training dataset, and output accuracies on the training and testing datasets.
+
+- Class: text
+  Output: "We've preloaded the iris dataset and created the training and testing datasets. They are stored in the following variables: iris_train, iris_test. Note that they are tidyverse tibbles, so you can apply dplyr functions on them. The `tidyverse` package has already been imported for you."
+
+- Class: cmd_question
+  Output: First, we build a classifier with KNN. Let's start with importing the classification package `class`, which contains an implementation of KNN. Type the command to import the `class` package.
+  CorrectAnswer: library(class)
+  AnswerTests: omnitest(correctExpr='library(class)')
+  Hint: Try library(class)
+
+- Class: cmd_question
+  Output: Quickly inspect the iris_train variable. Since it's a tidyverse tibble, we can simply type iris_train without worrying about the dataset being too big.
+  CorrectAnswer: iris_train
+  AnswerTests: omnitest(correctExpr='iris_train')
+  Hint: Type iris_train
+
+- Class: cmd_question
+  Output: "Notice that we need to perform some cleaning to the training dataset before it can be passed to the `knn` function as an argument – we need to exclude the 'Species' and 'id' columns from the data. We can use dplyr's `select` function to achieve this. Type the command and assign the returned value to `train`:"
+  CorrectAnswer: train <- iris_train %>% select(-Species, -id)
+  AnswerTests: any_of_exprs('train <- iris_train %>% select(-Species, -id)', 'train <- select(iris_train, -Species, -id)')
+  Hint: Assign the returned result of `iris_train %>% select(-Species, -id)` to `train`
+
+- Class: cmd_question
+  Output: "Do the same clean-up to iris_test, and assign the resulting tibble to a variable named `test`:"
+  CorrectAnswer: test <- iris_test %>% select(-Species, -id)
+  AnswerTests: any_of_exprs('test <- iris_test %>% select(-Species, -id)', 'test <- select(iris_test, -Species, -id)')
+  Hint: See the answer to previous question
+
+- Class: cmd_question
+  Output: "Now, we are ready to invoke the function `knn` to build a model and predict the Species of the samples in our test dataset. Note that the function `knn` requires 3 arguments: knn(train, test, cl), where `cl` is a factor of the actual Species labels of training set samples. Type the command to invoke `knn` with approperiate arguments, and assign the returned result to variable `test_pred`:"
+  CorrectAnswer: test_pred <- knn(train, test, cl=iris_train$Species)
+  AnswerTests: omnitest(correctExpr='test_pred <- knn(train, test, cl=iris_train$Species)')
+  Hint: Use iris_train$Species as the parameter for the cl argument, and remember to assign the returned result to `test_pred`
+
+- Class: cmd_question
+  Output: "How did we do in terms of prediction accuracy with our simple knn model? Calculate the accuracy using the function `mean`, by comparing `test_pred` to `iris_test$Species`:"
+  CorrectAnswer: mean(test_pred == iris_test$Species)
+  AnswerTests: omnitest(correctExpr='mean(test_pred == iris_test$Species)')
+  Hint: Try mean(test_pred == iris_test$Species)
+
+- Class: cmd_question
+  Output: "Similarly, calculate the prediction accuracy of the knn model on the training dataset:"
+  CorrectAnswer: mean(knn(train, train, cl=iris_train$Species) == iris_train$Species)
+  AnswerTests: omnitest(correctExpr='mean(knn(train, train, cl=iris_train$Species) == iris_train$Species)')
+  Hint: Type mean(knn(train, train, cl=iris_train$Species) == iris_train$Species)
+
+- Class: text
+  Output: "As we can see, our simple knn model performs quite well on the test dataset. Consider the following question: when is it useful to know the accuracy on the training dataset?"
+
+
