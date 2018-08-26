@@ -27,19 +27,19 @@
 - Class: cmd_question
   Output: "Notice that we need to perform some cleaning to the training dataset before it can be passed to the `knn` function as an argument – we need to exclude the 'Species' and 'id' columns from the data. We can use dplyr's `select` function to achieve this. Type the command and assign the returned value to `train`:"
   CorrectAnswer: train <- iris_train %>% select(-Species, -id)
-  AnswerTests: any_of_exprs('train <- iris_train %>% select(-Species, -id)', 'train <- select(iris_train, -Species, -id)')
+  AnswerTests: any_of_exprs('train <- iris_train %>% select(-Species, -id)', 'train <- select(iris_train, -Species, -id)');expr_creates_var('train')
   Hint: Assign the returned result of `iris_train %>% select(-Species, -id)` to `train`
 
 - Class: cmd_question
   Output: "Do the same clean-up to iris_test, and assign the resulting tibble to a variable named `test`:"
   CorrectAnswer: test <- iris_test %>% select(-Species, -id)
-  AnswerTests: any_of_exprs('test <- iris_test %>% select(-Species, -id)', 'test <- select(iris_test, -Species, -id)')
+  AnswerTests: any_of_exprs('test <- iris_test %>% select(-Species, -id)', 'test <- select(iris_test, -Species, -id)');expr_creates_var('test')
   Hint: See the answer to previous question
 
 - Class: cmd_question
   Output: "Now, we are ready to invoke the function `knn` to build a model and predict the Species of the samples in our test dataset. Note that the function `knn` requires 3 arguments: knn(train, test, cl), where `cl` is a factor of the actual Species labels of training set samples. Type the command to invoke `knn` with approperiate arguments, and assign the returned result to variable `test_pred`:"
   CorrectAnswer: test_pred <- knn(train, test, cl=iris_train$Species)
-  AnswerTests: omnitest(correctExpr='test_pred <- knn(train, test, cl=iris_train$Species)')
+  AnswerTests: omnitest(correctExpr='test_pred <- knn(train, test, cl=iris_train$Species)');expr_creates_var('test_pred')
   Hint: Use iris_train$Species as the parameter for the cl argument, and remember to assign the returned result to `test_pred`
 
 - Class: cmd_question
