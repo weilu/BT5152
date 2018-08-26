@@ -1,13 +1,13 @@
 - Class: meta
   Course: BT5152 Tutorial 1
-  Lesson: KNN Naive Bayes and Decision Tree
+  Lesson: KNN and Naive Bayes
   Author: Wei Lu
   Type: Standard
   Organization: National University of Singapore
   Version: 2.4.3
 
 - Class: text
-  Output: In this lesson, we'll learn how to build simple classification models such as KNN, Naive Bayes, and Decision Tree using the training dataset, and output accuracies on the training and testing datasets.
+  Output: In this lesson, we'll learn how to build simple classification models such as KNN and Naive Bayes using the training dataset, and output accuracies on the training and testing datasets.
 
 - Class: text
   Output: "We've preloaded the iris dataset and created the training and testing datasets. They are stored in the following variables: iris_train, iris_test. Note that they are tidyverse tibbles, so you can apply dplyr functions on them. The `tidyverse` package has already been imported for you."
