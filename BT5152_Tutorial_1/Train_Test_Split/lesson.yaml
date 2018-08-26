@@ -7,7 +7,7 @@
   Version: 2.4.3
 
 - Class: text
-  Output: In this lesson, we'll learn how to load a dataset, split it into training and testing sets; build simple classification models such as KNN, Naive Bayes, and Decision Tree using the training dataset, and output accuracies on the training and testing dataset.
+  Output: In this lesson, we'll learn how to load a dataset and split it into training and testing sets.
 
 - Class: cmd_question
   Output: To start, let's first load a built-in dataset into memory, type data(iris)
@@ -59,3 +59,35 @@
 - Class: text
   Output: "To put everything together, we can split the dataset to train and test with the following code:\n\n  set.seed(42)\n\n  iris_data <- iris[sample(nrow(iris)), ]\n\n  iris_train <- iris_data[1:100, ]\n\n  iris_test <- iris_data[101:150, ]"
 
+- Class: cmd_question
+  Output: Alternatively, we can use dplyr package's sample_frac and anti_join to create the train/test datasets. Having both datasets in tibble format will make future data manipulation easier for us. Let's start with importing the tidyverse package. Type library(tidyverse)
+  CorrectAnswer: library(tidyverse)
+  AnswerTests: omnitest(correctExpr='library(tidyverse)')
+  Hint: Type library(tidyverse)
+
+- Class: cmd_question
+  Output: Now we convert the iris data frame to a tibble. Type iris_data <- as.tibble(iris)
+  CorrectAnswer: iris_data <- as.tibble(iris)
+  AnswerTests: omnitest(correctExpr='iris_data <- as.tibble(iris)')
+  Hint: Type iris_data <- as.tibble(iris)
+
+- Class: cmd_question
+  Output: To use anti_join, we need an id column by which we can uniquely identify every data sample. Type a command to create the id column using the row index.
+  CorrectAnswer: iris_data$id <- 1:nrow(iris_data)
+  AnswerTests: omnitest(correctExpr='iris_data$id <- 1:nrow(iris_data)')
+  Hint: Try iris_data$id <- 1:nrow(iris_data)
+
+- Class: cmd_question
+  Output: "Now let's create the training dataset. Type iris_train <- iris_data %>% sample_frac(2/3)"
+  CorrectAnswer: "iris_train <- iris_data %>% sample_frac(2/3)"
+  AnswerTests: "omnitest(correctExpr='iris_train <- iris_data %>% sample_frac(2/3)')"
+  Hint: "Type iris_train <- iris_data %>% sample_frac(2/3)"
+
+- Class: cmd_question
+  Output: "We can then create the testing set by excluding samples from the training set. Type iris_test <- anti_join(iris_data, iris_train, by = 'id')"
+  CorrectAnswer: "iris_test <- anti_join(iris_data, iris_train, by = 'id')"
+  AnswerTests: omnitest(correctExpr="iris_test <- anti_join(iris_data, iris_train, by = 'id')")
+  Hint: Type iris_test <- anti_join(iris_data, iris_train, by = 'id')
+
+- Class: text
+  Output: "To put everything together, using the tidyverse package, we can split the dataset to train and test with the following code:\n\n  set.seed(42)\n\n  iris_data <- as.tibble(iris)\n\n  iris_data$id <- 1:nrow(iris_data)\n\n  iris_train <- iris_data %>% sample_frac(2/3)\n\n  iris_test <- anti_join(iris_data, iris_train, by = 'id')"
