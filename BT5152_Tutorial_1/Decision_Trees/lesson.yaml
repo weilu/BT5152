@@ -85,6 +85,32 @@
   Hint: Apply `mean` function to the result of `test_pred_rpart == iris_test$Species`
 
 - Class: figure
-  Output: "You can adjust the tree's size and complexity through tuning the pre-pruning parameters such as minsplit, maxdepth, cp etc. Here are some examples. Observe how each parameter changes the tree structure:"
+  Output: "You can adjust the tree's size and complexity through tuning the pruning parameters such as minsplit, maxdepth, cp etc. Here are some examples. Observe how each parameter changes the tree structure:"
   Figure: rpartPreprune.R
+  FigureType: new
+
+- Class: cmd_question
+  Output: "How do we choose which parameters to tune? cp is a powerful parameter that is easy to tune. Let's look at the `cptable` attribute on our `model_rpart`:"
+  CorrectAnswer: model_rpart$cptable
+  AnswerTests: omnitest(correctExpr='model_rpart$cptable')
+  Hint: Type model_rpart$cptable
+
+- Class: text
+  Output: "Observe that as the number of splits (nsplit) increases, CP decreases and the training error (rel error) decreases; while the cross validation error (xerror) stops decreasing at nsplit=2. It means that nsplit=2 is a good stopping point to avoid overfitting our model. We can use the corresponding CP value as the parameter for rpart.control when we build an rpart model."
+
+- Class: cmd_question
+  Output: "Find the best cp by making use of the minimum value of model_rpart$cptable[,'xerror'], and assign the returned value to variable `best_cp`:"
+  CorrectAnswer: best_cp <- model_rpart$cptable[which.min(model_rpart$cptable[,'xerror']), 'CP']
+  AnswerTests: omnitest(correctExpr="best_cp <- model_rpart$cptable[which.min(model_rpart$cptable[,'xerror']),'CP']")
+  Hint: model_rpart is a matrix, you can use which.min(model_rpart$cptable[,'xerror']) to find the index of the row with the smallest xerror, then use model_rpart$cptable[row_index, 'CP'] to return the best cp. Remember to assign the returned value to variable `best_cp`
+
+- Class: cmd_question
+  Output: "Now, build a new rpart model with `best_cp`. Assign the returned model to variable `model_rpart_pruned`"
+  CorrectAnswer: model_rpart_pruned <- rpart(Species ~., data=iris_train, control=rpart.control(cp=best_cp))
+  AnswerTests: omnitest(correctExpr='model_rpart_pruned <- rpart(Species ~., data=iris_train, control=rpart.control(cp=best_cp))')
+  Hint: Invoke `rpart` with parameter `control = rpart.control(cp=best_cp)`
+
+- Class: figure
+  Output: "Compare the new model with our baseline model built with the default cp, where cp=0.01:"
+  Figure: rpartPostprune.R
   FigureType: new
