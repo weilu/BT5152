@@ -17,9 +17,9 @@
 
 - Class: cmd_question
   Output: "Next, with the same iris_train and iris_test data we have already prepared for you, let's fit a model using the function `C5.0` from the C50 package. Feel free to look at the help documentation of function `C5.0` to find out what are the appropriate arguments required. Assigned the fitted model to variable named `model_tree`:"
-  CorrectAnswer: model_tree <- C5.0(select(iris_train, -Species), iris_train$Species)
-  AnswerTests: any_of_exprs('model_tree <- C5.0(select(iris_train, -Species), iris_train$Species)', 'model_tree <- C5.0(iris_train %>% select(-Species), iris_train$Species)')
-  Hint: Note that the first argument need to be a dataframe of features without the class variable Species. You can exclude the column with `select(iris_train, -Species)`. Also, remember to assign the returned model to variable named `model_tree`
+  CorrectAnswer: model_tree <- C5.0(Species ~., data=iris_train)
+  AnswerTests: any_of_exprs('model_tree <- C5.0(select(iris_train, -Species), iris_train$Species)', 'model_tree <- C5.0(iris_train %>% select(-Species), iris_train$Species)', 'model_tree <- C5.0(Species ~., data=iris_train)')
+  Hint: Note that there are two acceptable syntax for function `C5.0` – the first argument can either be a formula, or it needs to be a dataframe of features without the class variable Species. If you want to use the second syntax, you can exclude the column with `select(iris_train, -Species)`. Also, remember to assign the returned model to variable named `model_tree`
 
 - Class: cmd_question
   Output: "We can peek into the tree model. Type summary(model_tree)"
@@ -48,3 +48,43 @@
 - Class: text
   Output: "`C5.0` also supports simple boosting through the argument `trials`, and pre-pruning through the argument `control` where you can specify the minCase, e.g. `control = C5.0Control(minCases = 10)`. Adjusting neither parameters makes a big difference in our case as our tree model is very simple, and both our training and test accuracies are already quite high."
 
+- Class: cmd_question
+  Output: "Next, let's build another tree-based classification model using rpart, which implements recursive partitioning and maximizes the Gini index as the default criterion. Type the command to import the `rpart` library:"
+  CorrectAnswer: library(rpart)
+  AnswerTests: omnitest(correctExpr='library(rpart)')
+  Hint: Try library(rpart)
+
+- Class: cmd_question
+  Output: "To visualize the tree, we will also need to rpart.plot package. Type the command to import the `rpart.plot` library:"
+  CorrectAnswer: library(rpart.plot)
+  AnswerTests: omnitest(correctExpr='library(rpart.plot)')
+  Hint: Try library(rpart.plot)
+
+- Class: cmd_question
+  Output: "Let's fit a model on our iris_train data using the function `rpart`. Assigned the fitted model to variable named `model_rpart`:"
+  CorrectAnswer: model_rpart <- rpart(Species ~., data=iris_train)
+  AnswerTests: omnitest(correctExpr='model_rpart <- rpart(Species ~., data=iris_train)')
+  Hint: Note that the first argument to function `rpart` is a formula, try `Species ~.`
+
+- Class: cmd_question
+  Output: "Let's visualized the fitted tree model using `rpart.plot`:"
+  CorrectAnswer: rpart.plot(model_rpart)
+  AnswerTests: omnitest(correctExpr='rpart.plot(model_rpart)')
+  Hint: Type rpart.plot(model_rpart)
+
+- Class: cmd_question
+  Output: "Now let's put our tree model to use on our iris_test data and store the predictions in variable named `test_pred_rpart`. Note that you will need to specify type='class' when invoking `predict` (see ?predict.rpart)"
+  CorrectAnswer: test_pred_rpart <- predict(model_rpart, select(iris_test, -Species), type='class')
+  AnswerTests: any_of_exprs("test_pred_rpart <- predict(model_rpart, select(iris_test, -Species), type='class')", "test_pred_rpart <- predict(model_rpart, iris_test, type='class')", "test_pred_rpart <- predict(model_rpart, iris_test %>% select(-Species), type='class')")
+  Hint: Try predict(model_rpart, select(iris_test, -Species), type='class'). Remember to assign the returned value to `test_pred_rpart`
+
+- Class: cmd_question
+  Output: "Calculate the accuracy using the function `mean`, by comparing `test_pred_rpart` to `iris_test$Species`:"
+  CorrectAnswer: mean(test_pred_rpart == iris_test$Species)
+  AnswerTests: omnitest(correctExpr='mean(test_pred_rpart == iris_test$Species)')
+  Hint: Apply `mean` function to the result of `test_pred_rpart == iris_test$Species`
+
+- Class: figure
+  Output: "You can adjust the tree's size and complexity through tuning the pre-pruning parameters such as minsplit, maxdepth, cp etc. Here are some examples. Observe how each parameter changes the tree structure:"
+  Figure: rpartPreprune.R
+  FigureType: new
