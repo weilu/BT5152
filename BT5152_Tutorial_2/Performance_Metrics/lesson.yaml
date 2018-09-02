@@ -1,0 +1,92 @@
+- Class: meta
+  Course: BT5152_Tutorial_2
+  Lesson: Performance Metrics
+  Author: Wei Lu
+  Type: Standard
+  Organization: National University of Singapore
+  Version: 2.4.3
+
+- Class: text
+  Output: "In this lesson, we'll learn various ways to construct different metrics to measure classification models."
+
+- Class: cmd_question
+  Output: "We are going to make use of the dataset BreastCancer from the package mlbench. We've already prepared the training and test datasets. They are stored in `train` and `test` respectively. Have a look at the test dataset: type test"
+  CorrectAnswer: test
+  AnswerTests: omnitest(correctExpr='test')
+  Hint: test
+
+- Class: cmd_question
+  Output: "The target variable is Class, whose value is either benign or malignant. We have already trained a decision tree model with C5.0 using the training dataset. The model is saved in `model_c50`. To have a quick view of the classifier, type summary(model_c50)"
+  CorrectAnswer: summary(model_c50)
+  AnswerTests: omnitest(correctExpr='summary(model_c50)')
+  Hint: summary(model_c50)
+
+- Class: cmd_question
+  Output: "Use `model_c50` to predict the Class of the `test` dataset, and store the predictions in `predictions`. You may find the help doc for predict.C5.0 helpful."
+  CorrectAnswer: predictions <- predict(model_c50, test)
+  AnswerTests: any_of_exprs('predictions <- predict(model_c50, select(test, -Class))', 'predictions <- predict(model_c50, test)', 'predictions <- predict(model_c50, test %>% select(-Class))')
+  Hint: predictions <- predict(model_c50, test)
+
+- Class: cmd_question
+  Output: "Next, let's build a confusion matrix using the actual test Class and the predicted test Class. The `table` function returns a contingency table of counts at each combination of factor levels. Use `table`, `predictions` and `test` to create a confusion matrix with rows representing the predicted class and columns representing the actual class."
+  CorrectAnswer: table(predictions, test$Class)
+  AnswerTests: omnitest(correctExpr='table(predictions, test$Class)')
+  Hint: table(predictions, test$Class)
+
+- Class: cmd_question
+  Output: "Now, store the above confusion table to a variable named `cm`"
+  CorrectAnswer: cm <- table(predictions, test$Class)
+  AnswerTests: omnitest(correctExpr='cm <- table(predictions, test$Class)')
+  Hint: cm <- table(predictions, test$Class)
+
+- Class: cmd_question
+  Output: "We can access the counts from the returned results of `table` like a matrix, and manually calculate metrics we are interested in, such as sensitivity and specificity. In our case, since we are interested in diagnosing breast cancer, malignant => positive and benign => negative. Calculate sensitivity of our classifier using `cm`:"
+  CorrectAnswer: cm[2, 2] / (cm[1, 2] + cm[2, 2])
+  AnswerTests: omnitest(correctVal='0.98')
+  Hint: cm[2, 2] / (cm[1, 2] + cm[2, 2])
+
+- Class: cmd_question
+  Output: "Wouldn't be nice if there's a package that can output not only the counts of actual & predicted classes, but also the percentages? That would save us the trouble of calculating the metrics manually. There is. Let's import the gmodels package"
+  CorrectAnswer: library(gmodels)
+  AnswerTests: omnitest(correctExpr='library(gmodels)')
+  Hint: library(gmodels)
+
+- Class: cmd_question
+  Output: "Invoke function `CrossTable` with the same two arguments as you used to invoke `table`, and an additional argument `prop.chisq=F`:"
+  CorrectAnswer: CrossTable(predictions, test$Class, prop.chisq=F)
+  AnswerTests: any_of_exprs('CrossTable(predictions, test$Class,  prop.chisq=F)', 'CrossTable(predictions, test$Class,  prop.chisq=FALSE)')
+  Hint: CrossTable(predictions, test$Class, prop.chisq=F)
+
+- Class: text
+  Output: "Can you read sensitivity, specificity and false positive rate off the above outputdirectly? You may find this link helpful: https://stats.idre.ucla.edu/spss/faq/how-do-i-interpret-the-results-from-crosstabs/"
+
+- Class: cmd_question
+  Output: "Are there magic functions we can invoke which straightaway will return the metrics we are interested in? Introducing the all-powerful caret package. Import the caret package:"
+  CorrectAnswer: library(caret)
+  AnswerTests: omnitest(correctExpr='library(caret)')
+  Hint: library(caret)
+
+- Class: cmd_question
+  Output: "Invoke the `sensitivity` function with the confusion matrix `cm` and an appropriate string value for `positive=`"
+  CorrectAnswer: sensitivity(cm, positive='malignant')
+  AnswerTests: omnitest(correctExpr="sensitivity(cm, positive='malignant')")
+  Hint: sensitivity(cm, positive='malignant')
+
+- Class: cmd_question
+  Output: "Similarly, invoke the `specificity` function with the confusion matrix `cm` and an appropriate string value for `negative=`"
+  CorrectAnswer: specificity(cm, negative='benign')
+  AnswerTests: omnitest(correctExpr="specificity(cm, negative='benign')")
+  Hint: specificity(cm, negative='benign')
+
+- Class: cmd_question
+  Output: "Moreover, caret also provides us functions to calculate precision, recall and F1-score. They are `precision`, `recall` and `F_meas` respectively. Invoke `F_meas` with `cm` and an appropriate string value for `relevant=`:"
+  CorrectAnswer: F_meas(cm, relevant='malignant')
+  AnswerTests: omnitest(correctExpr="F_meas(cm, relevant='malignant')")
+  Hint: F_meas(cm, relevant='malignant')
+
+- Class: cmd_question
+  Output: "Verify that the above F1-score is correct by manually calculating the F1-score using `precision(cm, relevant='malignant')` and `recall(cm, relevant='malignant')`"
+  CorrectAnswer: 2 * precision(cm, relevant='malignant') * recall(cm, relevant='malignant') / (precision(cm, relevant='malignant') + recall(cm, relevant='malignant'))
+  AnswerTests: omnitest(correctExpr="2 * precision(cm, relevant='malignant') * recall(cm, relevant='malignant') / (precision(cm, relevant='malignant') + recall(cm, relevant='malignant'))")
+  Hint: 2 * precision(cm, relevant='malignant') * recall(cm, relevant='malignant') / (precision(cm, relevant='malignant') + recall(cm, relevant='malignant'))
+
