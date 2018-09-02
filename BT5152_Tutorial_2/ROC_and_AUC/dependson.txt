@@ -1,6 +1,6 @@
 mlbench
 tidyverse
 C50
-gmodels
-vcd
-caret
+e1071
+ROCR
+

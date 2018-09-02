@@ -1,0 +1,64 @@
+- Class: meta
+  Course: BT5152 Tutorial 2
+  Lesson: ROC and AUC
+  Author: Wei Lu
+  Type: Standard
+  Organization: National University of Singapore
+  Version: 2.4.3
+
+- Class: text
+  Output: "In this lesson, we'll learn to plot the receiver operating characteristic (ROC) curve and calculate the area under the curve (AUC) for our classifier. We will continue to make use of the BreastCancer dataset, which has already been split into `training` and `test` datasets. We also have a pre-trained decision tree model named `model_c50` loaded in memory."
+
+- Class: cmd_question
+  Output: "Package ROCR provides us with the functions we need for plotting ROC and calcuting AUC. Import the library `ROCR`:"
+  CorrectAnswer: library(ROCR)
+  AnswerTests: omnitest(correctExpr='library(ROCR)')
+  Hint: library(ROCR)
+
+- Class: cmd_question
+  Output: "We will need predicted probabilities of the malignant Class on the `test` dataset, using our model `model_c50`. Invoke function `predict` as before, but with an additional argument `type='prob'`"
+  CorrectAnswer: predict(model_c50, test, type='prob')
+  AnswerTests: omnitest(correctExpr="predict(model_c50, test, type='prob')")
+  Hint: predict(model_c50, test, type='prob')
+
+- Class: cmd_question
+  Output: "Notice that the returned matrix contains the probabilities for both benign and malignant classes for each sample. Since we are only interested in the malignant class, select the second column of the above matrix and assign the returned value to `predictions_prob`"
+  CorrectAnswer: predictions_prob <- predict(model_c50, test, type='prob')[, 2]
+  AnswerTests: omnitest(correctExpr="predictions_prob <- predict(model_c50, test, type='prob')[, 2]")
+  Hint: predictions_prob <- predict(model_c50, test, type='prob')[, 2]
+
+- Class: cmd_question
+  Output: "Now we are ready to construct a prediction object using the `prediction` functionfrom the ROCR package. Make use of `test$Class` and `predictions_prob` we created above and store the returned value in `pred`"
+  CorrectAnswer: pred <- prediction(predictions_prob, labels=test$Class)
+  AnswerTests: any_of_exprs("pred <- prediction(predictions_prob, labels=test$Class)", "pred <- prediction(predictions_prob, test$Class)", "pred <- prediction(predictions=predictions_prob, labels=test$Class)")
+  Hint: pred <- prediction(predictions_prob, labels=test$Class)
+
+- Class: cmd_question
+  Output: "Finally, we can pass the `pred` object to ROCR's `performance` function to create a plottable object. Be sure to specify the performance measures for the ROC curve, namely 'tpr' and 'fpr'. Store the returned object in `roc`:"
+  CorrectAnswer: roc <- performance(pred, 'tpr', 'fpr')
+  AnswerTests: any_of_exprs("roc <- performance(pred, 'tpr', 'fpr')", "roc <- performance(pred, measure='tpr', x.measure='fpr')")
+  Hint: roc <- performance(pred, 'tpr', 'fpr')
+
+- Class: cmd_question
+  Output: "Plot `roc`:"
+  CorrectAnswer: plot(roc)
+  AnswerTests: omnitest(correctExpr="plot(roc)")
+  Hint: plot(roc)
+
+- Class: cmd_question
+  Output: "Our ROC curve looks more like a v-shape than a curve because our decision tree model is very simple – there are only a handful of possible probability values. You can see this by typing unique(predictions_prob)"
+  CorrectAnswer: unique(predictions_prob)
+  AnswerTests: omnitest(correctExpr="unique(predictions_prob)")
+  Hint: unique(predictions_prob)
+
+- Class: cmd_question
+  Output: "We've built another classifer using naiveBayes from package e1071, and already constructed the plottable roc object for you. It's stored in the variable named `roc_nb`. You will see a more curve-like roc curve if you plot it:"
+  CorrectAnswer: plot(roc_nb)
+  AnswerTests: omnitest(correctExpr="plot(roc_nb)")
+  Hint: plot(roc_nb)
+
+- Class: cmd_question
+  Output: "You can find the area under the curve (AUC) by invoking the `performance` function with `measure='auc'`. Type performance(pred, 'auc')@y.values"
+  CorrectAnswer: performance(pred, 'auc')@y.values
+  AnswerTests: omnitest(correctExpr="performance(pred, 'auc')@y.values")
+  Hint: performance(pred, 'auc')@y.values
