@@ -1,6 +1,8 @@
 mlbench
 tidyverse
 C50
+e1071
 gmodels
 vcd
 caret
+ROCR
