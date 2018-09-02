@@ -10,7 +10,7 @@
   Output: "In this lesson, we'll learn various ways to construct different metrics to measure classification models."
 
 - Class: cmd_question
-  Output: "We are going to make use of the dataset BreastCancer from the package mlbench. We've already prepared the training and test datasets. They are stored in `train` and `test` respectively. Have a look at the test dataset: type test"
+  Output: "We are going to make use of the dataset BreastCancer from the package mlbench. We've already prepared the training and test datasets. They are stored in `training` and `test` respectively. Have a look at the test dataset: type test"
   CorrectAnswer: test
   AnswerTests: omnitest(correctExpr='test')
   Hint: test
