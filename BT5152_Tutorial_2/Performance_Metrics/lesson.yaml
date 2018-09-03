@@ -25,7 +25,7 @@
   Output: "Use `model_c50` to predict the Class of the `test` dataset, and store the predictions in `predictions_class`. You may find the help doc for predict.C5.0 helpful."
   CorrectAnswer: predictions_class <- predict(model_c50, test)
   AnswerTests: any_of_exprs('predictions_class <- predict(model_c50, select(test, -Class))', 'predictions_class <- predict(model_c50, test)', 'predictions_class <- predict(model_c50, test %>% select(-Class))')
-  Hint: predictions <- predict(model_c50, test)
+  Hint: predictions_class <- predict(model_c50, test)
 
 - Class: cmd_question
   Output: "Next, let's build a confusion matrix using the actual test Class and the predicted test Class. The `table` function returns a contingency table of counts at each combination of factor levels. Use `table`, `predictions_class` and `test` to create a confusion matrix with rows representing the predicted class and columns representing the actual class."
