@@ -42,7 +42,7 @@
 - Class: cmd_question
   Output: "We can access the counts from the returned results of `table` like a matrix, and manually calculate metrics we are interested in, such as sensitivity and specificity. In our case, since we are interested in diagnosing breast cancer, malignant => positive and benign => negative. Calculate sensitivity of our classifier using `cm`:"
   CorrectAnswer: cm[2, 2] / (cm[1, 2] + cm[2, 2])
-  AnswerTests: omnitest(correctVal='0.98')
+  AnswerTests: omnitest(correctExpr='cm[2, 2] / (cm[1, 2] + cm[2, 2])')
   Hint: cm[2, 2] / (cm[1, 2] + cm[2, 2])
 
 - Class: cmd_question
