@@ -1,0 +1,122 @@
+- Class: meta
+  Course: BT5152_Tutorial_2
+  Lesson: Model Selection
+  Author: Wei Lu
+  Type: Standard
+  Organization: National University of Singapore
+  Version: 2.4.3
+
+- Class: text
+  Output: "In this lesson, we'll explore modeling training & selection with cross validation using the caret package. All the library dependencies including caret have been imported for you in this lesson. We will continue working with the BreastCancer dataset. Training & test datasets are stored in `training` and `test` respectively. The classification target is the Class column."
+
+- Class: cmd_question
+  Output: "First, let's build a simple C5.0 decision tree model using caret's `train` function. Recall that previously, we built a decision tree with command: `C5.0(Class ~ ., data=training)`. Now, do the same but with caret's `train` function, using the same formula + data sytax as arguments. Remember to add an additional `method='C5.0Tree'` argument to indicate a simple C5.0 model will be used for training. Assign the returned model to `model_c50_simple`:"
+  CorrectAnswer: model_c50_simple <- train(Class ~ ., data=training, method='C5.0Tree')
+  AnswerTests: omnitest(correctExpr="model_c50_simple <- train(Class ~ ., data=training, method='C5.0Tree')")
+  Hint: model_c50_simple <- train(Class ~ ., data=training, method='C5.0Tree')
+
+- Class: cmd_question
+  Output: "The resulting model should look familiar. Type summary(model_c50_simple)"
+  CorrectAnswer: summary(model_c50_simple)
+  AnswerTests: omnitest(correctExpr="summary(model_c50_simple)")
+  Hint: summary(model_c50_simple)
+
+- Class: video
+  Output: "There are many available models available through the caret package, as documented here: http://topepo.github.io/caret/available-models.html. Search for C50 in the seach box on the web page once it's open. Open link?"
+  VideoLink: http://topepo.github.io/caret/available-models.html
+
+- Class: cmd_question
+  Output: "Notice that we used 'C5.0Tree' instead of 'C5.0' as our `method=` parameter above. Now build another model with method='C5.0'. Assign the returned model to `model_c50`. This may take a while."
+  CorrectAnswer: model_c50 <- train(Class ~ ., data=training, method='C5.0')
+  AnswerTests: omnitest(correctExpr="model_c50 <- train(Class ~ ., data=training, method='C5.0')")
+  Hint: model_c50 <- train(Class ~ ., data=training, method='C5.0')
+
+- Class: cmd_question
+  Output: "Look at the summary of our classifier `model_c50`. This may also take a while to run."
+  CorrectAnswer: summary(model_c50)
+  AnswerTests: omnitest(correctExpr="summary(model_c50)")
+  Hint: summary(model_c50)
+
+- Class: text
+  Output: "Notice that this time our model is much more complicated with multiple trials and multiple rules! This is because when 'C5.0' is used, caret by default conducts hyperparameter tuning through grid search. There are 3 hyperparameters: trials=1:100 (in steps of 10), model=c('tree', 'rules'), winnow=c(TRUE, FALSE). That makes 10 * 2 * 2 = 40 possible combinations; and each combination is fited to 25 bootstrap samples of the dataset, which makes 40 * 25 = 1,000 iterations in total! No wonder it took so long to run. Caret package then picked the best performing model for us. Whereas with method='C5.0Tree' we only built a single model with the default parameters."
+
+- Class: cmd_question
+  Output: "Knowing this, it would be reasonable for us to expect the classifier `model_c50` to outperform `model_c50_simple`. Let's check this using the function `resample`, which is capable of analyzing multiple models against a set of resampling results from a common data set. Type results <- resamples(list(C50Tree=model_c50_simple, C50=model_c50))"
+  CorrectAnswer: results <- resamples(list(C50Tree=model_c50_simple, C50=model_c50))
+  AnswerTests: omnitest(correctExpr="results <- resamples(list(C50Tree=model_c50_simple, C50=model_c50))")
+  Hint: results <- resamples(list(C50Tree=model_c50_simple, C50=model_c50))
+
+- Class: cmd_question
+  Output: "Look at the summary of `results`"
+  CorrectAnswer: summary(results)
+  AnswerTests: omnitest(correctExpr="summary(results)")
+  Hint: summary(results)
+
+- Class: text
+  Output: "Indeed! The tuned model `model_c50` outperforms `model_c50_simple` in both accuracy and kappa!"
+
+- Class: cmd_question
+  Output: "You may notice despite resampling, the above comparison is still done on the training dataset. How would their performance compare on our held-out `test` dataset? Chain together the following 3 functions: `confusionMatrix`, `table` and `predict` to produce the performance metrics of `model_c50_simple` on the `test` dataset:"
+  CorrectAnswer: confusionMatrix(table(predict(model_c50_simple, test), test$Class))
+  AnswerTests: omnitest(correctExpr="confusionMatrix(table(predict(model_c50_simple, test), test$Class))")
+  Hint: confusionMatrix(table(predict(model_c50_simple, test), test$Class))
+
+- Class: cmd_question
+  Output: "Do the same for `model_c50` on the `test` dataset:"
+  CorrectAnswer: confusionMatrix(table(predict(model_c50, test), test$Class))
+  AnswerTests: omnitest(correctExpr="confusionMatrix(table(predict(model_c50, test), test$Class))")
+  Hint: confusionMatrix(table(predict(model_c50, test), test$Class))
+
+- Class: text
+  Output: "Hooray! The tuned model `model_c50` outperforms `model_c50_simple` in both accuracy and kappa on the test dataset too. This shows the importance of hyperparameter tuning. Next, instead of leaving everything to caret's default tuning, we will learn do it explicilty with cross validation."
+
+- Class: cmd_question
+  Output: "First, let's start with just a 5-fold cross validation, without explicitly defining any hyperparameter tuning. Look up the help doc of `trainControl`, create a `trainControl` object that's a 5-fold cv, and assign it to `ctrl`:"
+  CorrectAnswer: ctrl <- trainControl(method='cv', number=5)
+  AnswerTests: any_of_exprs("ctrl <- trainControl(method='cv', number=5)", "ctrl <- trainControl('cv', 5)", "ctrl <- trainControl('cv', number=5)")
+  Hint: ctrl <- trainControl(method='cv', number=5)
+
+- Class: cmd_question
+  Output: "Next, invoke `train` function with the same fomula + data arguments as we did before, using method='C5.0' and an additional `trControl=ctrl` argument. Assign the resulting model to `model_c50_cv`:"
+  CorrectAnswer: model_c50_cv <- train(Class ~., data=training, method='C5.0', trControl=ctrl)
+  AnswerTests: omnitest(correctExpr="model_c50_cv <- train(Class ~., data=training, method='C5.0', trControl=ctrl)")
+  Hint: model_c50_cv <- train(Class ~., data=training, method='C5.0', trControl=ctrl)
+
+- Class: cmd_question
+  Output: "Inspect the model_c50_cv with `summary`"
+  CorrectAnswer: summary(model_c50_cv)
+  AnswerTests: omnitest(correctExpr="summary(model_c50_cv)")
+  Hint: summary(model_c50_cv)
+
+- Class: text
+  Output: "Notice that the resulting model still has multiple trials. This is because caret still did the default grid search on the 3 hyperparameters (trials, model, winnow) for us, and picked the best performing model based on the performance reported by cross validation."
+
+- Class: cmd_question
+  Output: "Now, let's set our own grid for hyperparameter search. Type grid <- expand.grid(.winnow = c(TRUE, FALSE), .trials=c(1, 5, 10, 15, 20), .model='tree')"
+  CorrectAnswer: grid <- expand.grid(.winnow = c(TRUE, FALSE), .trials=c(1, 5, 10, 15, 20), .model='tree')
+  AnswerTests: omnitest(correctExpr="grid <- expand.grid(.winnow = c(TRUE, FALSE), .trials=c(1, 5, 10, 15, 20), .model='tree')")
+  Hint: grid <- expand.grid(.winnow = c(TRUE, FALSE), .trials=c(1, 5, 10, 15, 20), .model='tree')
+
+- Class: cmd_question
+  Output: "Now invoke `train` again, with `trControl=ctrl, tuneGrid=grid`. Store the returned model in `model_c50_cv_grid`:"
+  CorrectAnswer: model_c50_cv_grid <- train(Class ~., data=training, method='C5.0', trControl=ctrl, tuneGrid=grid)
+  AnswerTests: omnitest(correctExpr="model_c50_cv_grid <- train(Class ~., data=training, method='C5.0', trControl=ctrl, tuneGrid=grid)")
+  Hint: model_c50_cv_grid <- train(Class ~., data=training, method='C5.0', trControl=ctrl, tuneGrid=grid)
+
+- Class: cmd_question
+  Output: "You may visualize the model graphically by invoking plot(model_c50_cv_grid):"
+  CorrectAnswer: plot(model_c50_cv_grid)
+  AnswerTests: omnitest(correctExpr="plot(model_c50_cv_grid)")
+  Hint: plot(model_c50_cv_grid)
+
+- Class: cmd_question
+  Output: "By default, caret uses accuracy as the performance metric for classification models. We can change it to Kappa by specifying `metric='Kappa'` when invoking the `train` function. Store the resulting model in `model_c50_cv_grid_kappa`:"
+  CorrectAnswer: model_c50_cv_grid_kappa <- train(Class ~., data=training, method='C5.0', trControl=ctrl, tuneGrid=grid, metric='Kappa')
+  AnswerTests: omnitest(correctExpr="model_c50_cv_grid_kappa <- train(Class ~., data=training, method='C5.0', trControl=ctrl, tuneGrid=grid, metric='Kappa')")
+  Hint: model_c50_cv_grid_kappa <- train(Class ~., data=training, method='C5.0', trControl=ctrl, tuneGrid=grid, metric='Kappa')
+
+- Class: cmd_question
+  Output: "Plot model_c50_cv_grid_kappa:"
+  CorrectAnswer: plot(model_c50_cv_grid_kappa)
+  AnswerTests: omnitest(correctExpr="plot(model_c50_cv_grid_kappa)")
+  Hint: plot(model_c50_cv_grid_kappa)
