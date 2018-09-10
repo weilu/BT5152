@@ -2,6 +2,7 @@ library(tidyverse)
 library(mlbench)
 library(C50)
 library(e1071)
+library(ROCR)
 
 data("BreastCancer")
 
