@@ -1,7 +1,176 @@
 - Class: meta
   Course: BT5152_Tutorial_3
   Lesson: Neural Network
-  Author: your name goes here
+  Author: Wei Lu
   Type: Standard
-  Organization: your organization's name goes here
+  Organization: National University of Singapore
   Version: 2.4.3
+
+- Class: text
+  Output: "In this lesson, we'll learn to train neural network models with various hyperparameters, and use them to predict a numerical outcome variable."
+
+- Class: cmd_question
+  Output: "We will use the BostonHousing dataset from the mlbench package. The target outcome we are interested in is the `medv` column, which is the median value of owner-occupied homes in $1000s. We will use all other features to train our neural network model. The data has been split into training and test sets, they are stored as tibbles in variables named `training` and `test` respectively. First have a look at the head of `training`:"
+  CorrectAnswer: head(training)
+  AnswerTests: omnitest(correctExpr="head(training)")
+  Hint: head(training)
+
+- Class: cmd_question
+  Output: "As we can see, all columns are numerical variables, so we don't have to worry about categorical variable encoding. However, neural network can be trained faster and produces more accurate results when the feature values are scaled to a narrow range like [0, 1] or [-1, 1]. We have provided a `normalize` function. Have a look at the function – type normalize"
+  CorrectAnswer: normalize
+  AnswerTests: omnitest(correctExpr="normalize")
+  Hint: normalize
+
+- Class: mult_question
+  Output: "Based on the implementation of the `normalize` function, when invoked, what range will the resulting data be in?"
+  AnswerChoices: "-1 to 0;-1 to 1;0 to 1"
+  CorrectAnswer: "0 to 1"
+  AnswerTests: omnitest(correctVal="0 to 1")
+  Hint: "try out the normalize function with a list like c(-5, 4, 20)"
+
+- Class: cmd_question
+  Output: "Apply `normalize` method to all rows and columns of `training`, and assign the returned tibble object to `scaled_training`. You may find dplyr's `mutate_all` function useful."
+  CorrectAnswer: scaled_training <- training %>% mutate_all(normalize)
+  AnswerTests: any_of_exprs("scaled_training <- training %>% mutate_all(normalize)", "scaled_training <- mutate_all(training, normalize)", "scaled_training <- as.tibble(lapply(training, normalize))")
+  Hint: "scaled_training <- training %>% mutate_all(normalize)"
+
+- Class: cmd_question
+  Output: "Do the same to `test` and assign the resulting tibble to `scaled_test`:"
+  CorrectAnswer: scaled_test <- test %>% mutate_all(normalize)
+  AnswerTests: any_of_exprs("scaled_test <- test %>% mutate_all(normalize)", "scaled_test <- mutate_all(test, normalize)", "scaled_test <- as.tibble(lapply(test, normalize))")
+  Hint: "scaled_test <- test %>% mutate_all(normalize)"
+
+- Class: cmd_question
+  Output: "Have a look at the summary of `scaled_training`."
+  CorrectAnswer: summary(scaled_training)
+  AnswerTests: omnitest(correctExpr="summary(scaled_training)")
+  Hint: summary(scaled_training)
+
+- Class: text
+  Output: "Notice that all columns, including our target column medv are now in range [0, 1]. Since the target column has been transformed in the same way on both training the test datasets, we can still use it to build our model and meaningfully measure model performance."
+
+- Class: cmd_question
+  Output: "Next let's import the package `neuralnet`, which will provide us with the function `neuralnet` to train a prediction model:"
+  CorrectAnswer: library(neuralnet)
+  AnswerTests: omnitest(correctExpr="library(neuralnet)")
+  Hint: library(neuralnet)
+
+- Class: cmd_question
+  Output: "Like a typical model training function, the `neuralnet` function takes a formula as the first argument and data as the second argument. However, `neuralnet` doesn't allow for the . syntax in formula, which we used before to indicate 'the rest of the columns', instead, we will need to explicitly list all the features in the formula. Let's construct the formula programmatically, so we can easily reuse it later. First get the column names from `scaled_training`, assign them to `col_names`:"
+  CorrectAnswer: col_names <- names(scaled_training)
+  AnswerTests: any_of_exprs("col_names <- names(scaled_training)", "col_names <- colnames(scaled_training)")
+  Hint: col_names <- names(scaled_training)
+
+- Class: cmd_question
+  Output: "Next, exclude 'medv' from col_names and join the rest together using ' + '. You might find `%in%` and `paste` function useful in achieving this:"
+  CorrectAnswer: paste(col_names[!col_names %in% 'medv'], collapse = ' + ')
+  AnswerTests: omnitest(correctExpr="paste(col_names[!col_names %in% 'medv'], collapse = ' + ')")
+  Hint: paste(col_names[!col_names %in% 'medv'], collapse = ' + ')
+
+- Class: cmd_question
+  Output: "Now prepend the string we obtained above with 'medv ~', by adding on to the previous expression. Use `paste`:"
+  CorrectAnswer: paste('medv ~', paste(col_names[!col_names %in% 'medv'], collapse = ' + '))
+  AnswerTests: omnitest(correctExpr="paste('medv ~', paste(col_names[!col_names %in% 'medv'], collapse = ' + '))")
+  Hint: paste('medv ~', paste(col_names[!col_names %in% 'medv'], collapse = ' + '))
+
+- Class: cmd_question
+  Output: "Almost there! Finally, we need to convert the string we've obtained above to a formula object, and assign the returned value to `formula`"
+  CorrectAnswer: formula <- as.formula(paste('medv ~', paste(col_names[!col_names %in% 'medv'], collapse = ' + ')))
+  AnswerTests: omnitest(correctExpr="formula <- as.formula(paste('medv ~', paste(col_names[!col_names %in% 'medv'], collapse = ' + ')))")
+  Hint: formula <- as.formula(paste('medv ~', paste(col_names[!col_names %in% 'medv'], collapse = ' + ')))
+
+- Class: cmd_question
+  Output: "Phew, that was hard work! Now let's make use of the formula by passing it to the `neuralnet` function alongside the `scaled_training` dataset. Assign the resulting model to `model_nn`"
+  CorrectAnswer: model_nn <- neuralnet(formula, data=scaled_training)
+  AnswerTests: any_of_exprs("model_nn <- neuralnet(formula, data=scaled_training)", "model_nn <- neuralnet(formula, scaled_training)", "model_nn <- neuralnet(formula=formula, data=scaled_training)")
+  Hint: model_nn <- neuralnet(formula, data=scaled_training)
+
+- Class: cmd_question
+  Output: "Plot the model to visualize the network:"
+  CorrectAnswer: plot(model_nn)
+  AnswerTests: omnitest(correctExpr="plot(model_nn)")
+  Hint: plot(model_nn)
+
+- Class: cmd_question
+  Output: "Next we are going to use the `neuralnet::compute` function to calulate the values at each node in our `model_nn` for the `scaled_test` dataset, and store the returned value in `scaled_results`."
+  CorrectAnswer: scaled_results <- neuralnet::compute(model_nn, select(scaled_test, -medv))
+  AnswerTests: any_of_exprs("scaled_results <- neuralnet::compute(model_nn, select(scaled_test, -medv))", "scaled_results <- neuralnet::compute(model_nn, scaled_test %>% select(-medv))", "scaled_results <- neuralnet::compute(model_nn, scaled_test[, !names(scaled_test) %in% c('medv')])")
+  Hint: "Remember to use the neuralnet:: namespace in front of compute, as both dplyr and neuralnet packages offer function named compute. If you are getting 'non-conformable arguments', try excluding the target column `medv` from the `scaled_test` dataset before passing it as an argument."
+
+- Class: cmd_question
+  Output: "Different from the `predict` function, `compute` returns a list with two components: `$neurons`, which stores the neurons for each layer in the network, and `$net.result`, which stores the predicted values. Now, calculate the mean absolute error between the actual `medv` values in `scaled_test` and the predicted values. Use function `mae` from the `Metrics` package, which has already been imported for you:"
+  CorrectAnswer: mae(scaled_test$medv, scaled_results$net.result)
+  AnswerTests: any_of_exprs("mae(scaled_test$medv, scaled_results$net.result)", "mae(scaled_results$net.result, scaled_test$medv)")
+  Hint: mae(scaled_test$medv, scaled_results$net.result)
+
+- Class: cmd_question
+  Output: "A single MAE value doesn't tell us much. Let's tweak our model and see if we can do better. Let's keep the layer size as 1, but increase the number of nodes to 3. You can do so by specifying the `hidden` parameter. Assign the returned model to `model_nn_3x1`"
+  CorrectAnswer: model_nn_3x1 <- neuralnet(formula, data=scaled_training, hidden=3)
+  AnswerTests: any_of_exprs("model_nn_3x1 <- neuralnet(formula, data=scaled_training, hidden=3)", "model_nn_3x1 <- neuralnet(formula, scaled_training, hidden=3)", "model_nn_3x1 <- neuralnet(formula=formula, data=scaled_training, hidden=3)")
+  Hint: model_nn_3x1 <- neuralnet(formula, data=scaled_training, hidden=3)
+
+- Class: cmd_question
+  Output: "Compute the model on the `scaled_test` dataset and store the returned value in `scaled_results_3x1`"
+  CorrectAnswer: scaled_results_3x1 <- neuralnet::compute(model_nn_3x1, select(scaled_test, -medv))
+  AnswerTests: any_of_exprs("scaled_results_3x1 <- neuralnet::compute(model_nn_3x1, select(scaled_test, -medv))", "scaled_results_3x1 <- neuralnet::compute(model_nn_3x1, scaled_test %>% select(-medv))", "scaled_results_3x1 <- neuralnet::compute(model_nn_3x1, scaled_test[, !names(scaled_test) %in% c('medv')])")
+  Hint: scaled_results_3x1 <- neuralnet::compute(model_nn_3x1, select(scaled_test, -medv))
+
+- Class: cmd_question
+  Output: "Output the MAE between the actual `medv` values in `scaled_test` and the predicted values in `scaled_results_3x1`"
+  CorrectAnswer: mae(scaled_test$medv, scaled_results_3x1$net.result)
+  AnswerTests: any_of_exprs("mae(scaled_test$medv, scaled_results_3x1$net.result)", "mae(scaled_results_3x1$net.result, scaled_test$medv)")
+  Hint: mae(scaled_test$medv, scaled_results_3x1$net.result)
+
+- Class: cmd_question
+  Output: "The difference is tiny and could well be due to chance. Nevertheless, we can keep tweaking our model. This time, let's add another layer with 2 nodes. So we will have a model named `model_nn_3x2` with the first layer having 3 nodes, and second layer having 2 nodes:"
+  CorrectAnswer: model_nn_3x2 <- neuralnet(formula, data=scaled_training, hidden=c(3, 2))
+  AnswerTests: any_of_exprs("model_nn_3x2 <- neuralnet(formula, data=scaled_training, hidden=c(3, 2))", "model_nn_3x2 <- neuralnet(formula, scaled_training, hidden=c(3, 2))", "model_nn_3x2 <- neuralnet(formula=formula, data=scaled_training, hidden=c(3, 2))")
+  Hint: model_nn_3x2 <- neuralnet(formula, data=scaled_training, hidden=c(3, 2))
+
+- Class: cmd_question
+  Output: "Compute the model on the `scaled_test` dataset and store the returned value in `scaled_results_3x2`"
+  CorrectAnswer: scaled_results_3x2 <- neuralnet::compute(model_nn_3x2, select(scaled_test, -medv))
+  AnswerTests: any_of_exprs("scaled_results_3x2 <- neuralnet::compute(model_nn_3x2, select(scaled_test, -medv))", "scaled_results_3x2 <- neuralnet::compute(model_nn_3x2, scaled_test %>% select(-medv))", "scaled_results_3x2 <- neuralnet::compute(model_nn_3x2, scaled_test[, !names(scaled_test) %in% c('medv')])")
+  Hint: scaled_results_3x2 <- neuralnet::compute(model_nn_3x2, select(scaled_test, -medv))
+
+- Class: cmd_question
+  Output: "Output the MAE between the actual `medv` values in `scaled_test` and the predicted values in `scaled_results_3x2`"
+  CorrectAnswer: mae(scaled_test$medv, scaled_results_3x2$net.result)
+  AnswerTests: any_of_exprs("mae(scaled_test$medv, scaled_results_3x2$net.result)", "mae(scaled_results_3x2$net.result, scaled_test$medv)")
+  Hint: mae(scaled_test$medv, scaled_results_3x2$net.result)
+
+- Class: cmd_question
+  Output: "Again, another small difference, also could be attributed to chance. Notice that the model is taking longer and longer to train? Next let's change the hidden layer's activation function from the default 'logistic' to 'tanh'. You can achieve this by specifying the `act.fct` parameter. Assign the returned model to `model_nn_3x2_tanh`:"
+  CorrectAnswer: model_nn_3x2_tanh <- neuralnet(formula, data=scaled_training, hidden=c(3, 2), act.fct='tanh')
+  AnswerTests: any_of_exprs("model_nn_3x2_tanh <- neuralnet(formula, data=scaled_training, hidden=c(3, 2), act.fct='tanh')", "model_nn_3x2_tanh <- neuralnet(formula, scaled_training, hidden=c(3, 2), act.fct='tanh')", "model_nn_3x2_tanh <- neuralnet(formula=formula, data=scaled_training, hidden=c(3, 2), act.fct='tanh')")
+  Hint: model_nn_3x2_tanh <- neuralnet(formula, data=scaled_training, hidden=c(3, 2))
+
+- Class: cmd_question
+  Output: "Plot the model to visualize the network: "
+  CorrectAnswer: plot(model_nn_3x2_tanh)
+  AnswerTests: omnitest(correctExpr="plot(model_nn_3x2_tanh)")
+  Hint: plot(model_nn_3x2_tanh)
+
+- Class: cmd_question
+  Output: "Remember that all of our predicted values are normalized to the range [0, 1]. It's fine for us to use it for measuring model performance, but if our goal is to predict house values given the same set of features, we would need to denormalize the predicted values back to the original range, before we can report a meaningful predicted house value. Remember that we showed you the implementation of the `normalize` function. Implement a `denormalize` function that reverses the calculation of `normalize`. Use the following skeleton code: denormalize <- function(x, min_x, max_x) { return() }"
+  CorrectAnswer: "denormalize <- function(x, min_x, max_x) { return(x * (max_x - min_x) + min_x) }"
+  AnswerTests: omnitest(correctExpr="denormalize <- function(x, min_x, max_x) { return(x * (max_x - min_x) + min_x) }")
+  Hint: "denormalize <- function(x, min_x, max_x) { return(x * (max_x - min_x) + min_x) }"
+
+- Class: cmd_question
+  Output: "Invoke the `denormalize` function with `scaled_results$net.result`, and the min and max values of `test$medv`. Store the returned value in `pred`"
+  CorrectAnswer: pred <- denormalize(scaled_results$net.result, min(test$medv), max(test$medv))
+  AnswerTests: omnitest(correctExpr="pred <- denormalize(scaled_results$net.result, min(test$medv), max(test$medv))")
+  Hint: pred <- denormalize(scaled_results$net.result, min(test$medv), max(test$medv))
+
+- Class: cmd_question
+  Output: "We can visualize our predicted vs. the actual value by plotting the actual `medv` values from `test` on the x axis, and `pred` on the y axis:"
+  CorrectAnswer: plot(test$medv, pred)
+  AnswerTests: omnitest(correctExpr='plot(test$medv, pred)')
+  Hint: plot(test$medv, pred)
+
+- Class: cmd_question
+  Output: "If all our predictions are perfectly correct, the points should rest on the line y = x. Let's add the line to the plot we've made. Type abline(0, 1)"
+  CorrectAnswer: abline(0, 1)
+  AnswerTests: omnitest(correctExpr='abline(0, 1)')
+  Hint: abline(0, 1)
