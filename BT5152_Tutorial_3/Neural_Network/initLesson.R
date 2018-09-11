@@ -20,6 +20,6 @@ boston$index <- 1:nrow(boston)
 training <- withr::with_seed(42, sample_frac(boston, 0.8))
 test <- boston %>%
   anti_join(training, by = 'index') %>%
-  select(-index)
-training <- training %>% select(-index)
+  dplyr::select(-index)
+training <- training %>% dplyr::select(-index)
 
