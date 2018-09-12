@@ -56,6 +56,12 @@
   Hint: library(neuralnet)
 
 - Class: cmd_question
+  Output: "To make sure that we can reliably get the same results, let's set a seed for the random number generator, which will be used to initialize the starting weights. Type set.seed(1337)"
+  CorrectAnswer: set.seed(1337)
+  AnswerTests: omnitest(correctExpr="set.seed(1337)")
+  Hint: set.seed(1337)
+
+- Class: cmd_question
   Output: "Like a typical model training function, the `neuralnet` function takes a formula as the first argument and data as the second argument. However, `neuralnet` doesn't allow for the . syntax in formula, which we used before to indicate 'the rest of the columns', instead, we will need to explicitly list all the features in the formula. Let's construct the formula programmatically, so we can easily reuse it later. First get the column names from `scaled_training`, assign them to `col_names`:"
   CorrectAnswer: col_names <- names(scaled_training)
   AnswerTests: any_of_exprs("col_names <- names(scaled_training)", "col_names <- colnames(scaled_training)")
