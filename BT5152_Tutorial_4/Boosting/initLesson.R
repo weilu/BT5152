@@ -31,47 +31,55 @@ accuracy <- mean(test$Class == out)
 print(c(accuracy_train, accuracy,
         accuracy_train - accuracy))
 
-boost <- function(n_trees, training_data) {
+train_boosting <- function(n_trees, training_data) {
   n_sample <- nrow(training_data)
 
   #start with equal weights
   weights <- as.numeric(unlist(list(rep(1/n_sample, n_sample))))
 
-  out <- 0
-  #for each tree
+  models <- list()
   for(i in 1:n_trees){
     #sample with weights
-    s1 <- sample(1:n_sample, n_sample, prob=weights, replace=TRUE)
+    sample_indexes <- sample(1:n_sample, prob=weights, replace=TRUE)
+    m <- rpart(Class ~., training_data[sample_indexes, ])
+    models <- c(models, list(m))
 
-    ti <- training_data[s1,]
-
-    m <- rpart(Class ~., ti)
-    p <- as.data.frame(predict(m, test, type='prob'))$good
-
-    out = out + p
-
-    #calculate new probabilities
+    #calculate new probabilities based on prediction accuracy on training set
     good_dummy <- ifelse(as.character(training_data$Class) == 'good', 1, 0)
     pred_prob <- as.data.frame(predict(m, training_data, type='prob'))$good
     err <- abs(good_dummy - pred_prob)
     weights <- as.numeric(err/sum(err))
   }
 
-  out = out/n_trees
-  return(factor(out>0.5, levels=c(T, F), labels=c('good', 'bad')))
+  return(models)
 }
 
-boosted_out <- boost(30, training)
+predict_boosting <- function(models, test_data) {
+  probs <- sapply(models, function(m) {
+    return(as.data.frame(predict(m, test_data, type='prob'))$good)
+  })
+  avg_probs <- rowSums(probs) / length(models)
+  return(factor(avg_probs>0.5, levels=c(T, F), labels=c('good', 'bad')))
+}
+
+models <- train_boosting(3, training)
+boosted_out_train <- predict_boosting(models, training)
+boosted_accuracy_train <- mean(training$Class == boosted_out_train)
+boosted_out <- predict_boosting(models, test)
 boosted_accuracy <- mean(test$Class == boosted_out)
-print(boosted_accuracy)
+print(c(boosted_accuracy_train, boosted_accuracy,
+        boosted_accuracy_train - boosted_accuracy))
 
 # ada boosting only works for classification
 control <- trainControl(method="cv", number=5)
 grid = expand.grid(.mfinal=10, .maxdepth=30)
 model_adaboost <- train(Class~., data=training, method='AdaBag',
                         tuneGrid=grid, trControl=control)
+adaboosted_out_train <- predict(model_adaboost, training)
+adaboosted_accuracy_train <- mean(training$Class == adaboosted_out_train)
 adaboosted_out <- predict(model_adaboost, test)
 adaboosted_accuracy <- mean(test$Class == adaboosted_out)
-print(adaboosted_accuracy)
+print(c(adaboosted_accuracy_train, adaboosted_accuracy,
+        adaboosted_accuracy_train - adaboosted_accuracy))
 
 
