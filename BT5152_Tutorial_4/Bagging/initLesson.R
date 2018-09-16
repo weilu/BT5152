@@ -28,7 +28,8 @@ out_train <- predict(model, training, type='class')
 accuracy_train <- mean(training$Class == out_train)
 out <- predict(model, test, type='class')
 accuracy <- mean(test$Class == out)
-print(paste(accuracy_train, accuracy))
+print(c(accuracy_train, accuracy,
+        accuracy_train - accuracy))
 
 # build manual bagging models
 train_bagging <- function(n_bags, training_data){
@@ -52,7 +53,10 @@ predict_bagging <- function(models, test_data) {
 models <- train_bagging(50, training)
 out_bagging <- predict_bagging(models, test)
 accuracy_bagging <- mean(test$Class == out_bagging)
-print(accuracy_bagging)
+out_bagging_train <- predict_bagging(models, training)
+accuracy_bagging_training <- mean(training$Class == out_bagging_train)
+print(c(accuracy_bagging_training, accuracy_bagging,
+        accuracy_bagging_training - accuracy_bagging))
 
 
 # use 5-fold cv for model selection
@@ -64,7 +68,8 @@ out_train_treebag <- predict(model_treebag, training, type='raw')
 accuracy_train_treebag <- mean(training$Class == out_train_treebag)
 out_treebag <- predict(model_treebag, test, type='raw')
 accuracy_treebag <- mean(test$Class == out_treebag)
-print(paste(accuracy_train_treebag, accuracy_treebag))
+print(c(accuracy_train_treebag, accuracy_treebag,
+        accuracy_train_treebag - accuracy_treebag))
 
 # bagging with random forest
 model_rf <- train(Class~., data=training, method="rf", trControl=control)
@@ -72,4 +77,5 @@ out_train_rf <- predict(model_rf, training, type='raw')
 accuracy_train_rf <- mean(training$Class == out_train_rf)
 out_rf <- predict(model_rf, test, type='raw')
 accuracy_rf <- mean(test$Class == out_rf)
-print(paste(accuracy_train_rf, accuracy_rf))
+print(c(accuracy_train_rf, accuracy_rf,
+        accuracy_train_rf - accuracy_rf))
