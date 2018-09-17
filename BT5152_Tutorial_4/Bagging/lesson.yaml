@@ -90,3 +90,29 @@
 - Class: text
   Output: "Notice that our simple bagging ensemble not only reduced the gap of training and test error (variance), it even improved overall prediction accuracy (bias)!"
 
+- Class: cmd_question
+  Output: "We can also achieve bagging through models provided by the powerful caret package. One of the available model is 'treebag' which implements bagging for rpart internally. Let's train a model named `model_treebag` using: method='treebag', metric='MAE', trControl=trainControl(method='cv', number=5)"
+  CorrectAnswer: model_treebag <- train(price ~ ., data=training, method='treebag', metric='MAE', trControl=trainControl(method='cv', number=5))
+  AnswerTests: omnitest(correctExpr="model_treebag <- train(price ~ ., data=training, method='treebag', metric='MAE', trControl=trainControl(method='cv', number=5))")
+  Hint: model_treebag <- train(price ~ ., data=training, method='treebag', metric='MAE', trControl=trainControl(method='cv', number=5))
+
+- Class: cmd_question
+  Output: "Use `model_treebag` to predict diamond prices on the `test` dataset and calculate the MAE:"
+  CorrectAnswer: mae(test$price, predict(model_treebag, test))
+  AnswerTests: omnitest(correctExpr="mae(test$price, predict(model_treebag, test))")
+  Hint: mae(test$price, predict(model_treebag, test))
+
+- Class: cmd_question
+  Output: "Random forest is also a form of bagging. It's also available through the caret package. train a model named `model_rf` using: method='rf', metric='MAE', trControl=trainControl(method='cv', number=5)"
+  CorrectAnswer: model_rf <- train(price ~ ., data=training, method='rf', metric='MAE', trControl=trainControl(method='cv', number=5))
+  AnswerTests: omnitest(correctExpr="model_rf <- train(price ~ ., data=training, method='rf', metric='MAE', trControl=trainControl(method='cv', number=5))")
+  Hint: model_rf <- train(price ~ ., data=training, method='rf', metric='MAE', trControl=trainControl(method='cv', number=5))
+
+- Class: cmd_question
+  Output: "Use `model_rf` to predict diamond prices on the `test` dataset and calculate the MAE:"
+  CorrectAnswer: mae(test$price, predict(model_rf, test))
+  AnswerTests: omnitest(correctExpr="mae(test$price, predict(model_rf, test))")
+  Hint: mae(test$price, predict(model_rf, test))
+
+- Class: text
+  Output: "Random forest performs even better because it modifies the tree grown procedure to reduce the correlation between trees. However, notice that it also took longer to train."
