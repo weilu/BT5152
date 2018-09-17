@@ -1,7 +1,97 @@
 - Class: meta
   Course: BT5152_Tutorial_4
   Lesson: Stacking
-  Author: your name goes here
+  Author: Wei Lu
   Type: Standard
-  Organization: your organization's name goes here
+  Organization: National University of Singapore
   Version: 2.4.3
+
+- Class: text
+  Output: "In this lesson, we'll learn to combine prediction results from multiple primary models using a meta model, which together form a stacking ensemble model. We will achieve this through the caretEnsemble package."
+
+- Class: text
+  Output: "We will continue using the Ionosphere dataset from the mlbench package. The data has been split into training and test sets, they are stored as tibbles in variables named `training` and `test` respectively."
+
+- Class: cmd_question
+  Output: "Before we can use caretList to train a set of primary models, we need to prepare a few argument variables. First, invoke `createFolds` function from the caret package to create a fixed set of 5 folds on the `training` dataset which we can use across all primary models. Keep in mind that the target outcome is the `Class` column. Assign the returned value to `folds`"
+  CorrectAnswer: folds <- createFolds(training$Class, 5)
+  AnswerTests: any_of_exprs("folds <- createFolds(training$Class, 5)", "folds <- createFolds(training$Class, k=5)")
+  Hint: folds <- createFolds(training$Class, 5)
+
+- Class: cmd_question
+  Output: "Next, create a `trainControl` object named `control` using: method='repeatedcv', number=5, repeats=3, index=folds, savePredictions='final', classProbs=TRUE, summaryFunction=twoClassSummary. We specify summaryFunction so that we can use ROC as our metric for primary model selection later. savePredictions and classProbs are needed for combining the prediction later."
+  CorrectAnswer: control <- trainControl(method='repeatedcv', number=5, repeats=3, index=folds, savePredictions='final', classProbs=TRUE, summaryFunction=twoClassSummary)
+  AnswerTests: omnitest(correctExpr="control <- trainControl(method='repeatedcv', number=5, repeats=3, index=folds, savePredictions='final', classProbs=TRUE, summaryFunction=twoClassSummary)")
+  Hint: control <- trainControl(method='repeatedcv', number=5, repeats=3, index=folds, savePredictions='final', classProbs=TRUE, summaryFunction=twoClassSummary)
+
+- Class: cmd_question
+  Output: "Create a vector of strings of the primary model names: 'rpart', 'knn', 'C5.0Tree', 'svmLinear2'. Assign the vector to a variable named `algos`"
+  CorrectAnswer: algos <- c('rpart', 'knn', 'C5.0Tree', 'svmLinear2')
+  AnswerTests: omnitest(correctExpr="algos <- c('rpart', 'knn', 'C5.0Tree', 'svmLinear2')")
+  Hint: algos <- c('rpart', 'knn', 'C5.0Tree', 'svmLinear2')
+
+- Class: cmd_question
+  Output: "Invoke the `caretList` function from the caretEnsemble package as if you are invoke the `train` function from caret. Use `training` as data, metric='ROC', trControl=control, methodList=algos. Assign the returned value to `models`:"
+  CorrectAnswer: models <- caretList(Class~., data=training, metric='ROC', trControl=control, methodList=algos)
+  AnswerTests: omnitest(correctExpr="models <- caretList(Class~., data=training, metric='ROC', trControl=control, methodList=algos)")
+  Hint: models <- caretList(Class~., data=training, metric='ROC', trControl=control, methodList=algos)
+
+- Class: cmd_question
+  Output: "Type: models_perf <- resamples(models)"
+  CorrectAnswer: models_perf <- resamples(models)
+  AnswerTests: omnitest(correctExpr="models_perf <- resamples(models)")
+  Hint: models_perf <- resamples(models)
+
+- Class: cmd_question
+  Output: "Type: summary(models_perf), which will display the cross-validated performance of each primary model on their own. Pay attention to the mean ROC, which we will try to improve by combining the primary models using a meta model later."
+  CorrectAnswer: summary(models_perf)
+  AnswerTests: omnitest(correctExpr="summary(models_perf)")
+  Hint: summary(models_perf)
+
+- Class: cmd_question
+  Output: "Before we proceed to stack our models, we want to check that the predictions of our models are not highly correlated (cor>0.75), otherwise a high correlation means the models are making similar predictions, therefore we can't expect to get much benefit by combining them. Type modelCor(models_perf)"
+  CorrectAnswer: modelCor(models_perf)
+  AnswerTests: omnitest(correctExpr="modelCor(models_perf)")
+  Hint: modelCor(models_perf)
+
+- Class: cmd_question
+  Output: "Most of the primary models aren't highly correlated, so let's proceed. Next we need to create another `trainControl` object named `stack_control` using: method='repeatedcv', number=5, repeats=3, classProbs=TRUE, summaryFunction=twoClassSummary"
+  CorrectAnswer: stack_control <- trainControl(method='repeatedcv', number=5, repeats=3, classProbs=TRUE, summaryFunction=twoClassSummary)
+  AnswerTests: omnitest(correctExpr="stack_control <- trainControl(method='repeatedcv', number=5, repeats=3, classProbs=TRUE, summaryFunction=twoClassSummary)")
+  Hint: stack_control <- trainControl(method='repeatedcv', number=5, repeats=3, classProbs=TRUE, summaryFunction=twoClassSummary)
+
+- Class: cmd_question
+  Output: "Now, let's use random forest as our meta model. Invoke `caretStack` from the caretEnsemble package using: models, method='rf', metric='ROC', trControl=stack_control. Assign the returned object to `stack_rf`. This may take a while."
+  CorrectAnswer: stack_rf <- caretStack(models, method='rf', metric='ROC', trControl=stack_control)
+  AnswerTests: omnitest(correctExpr="stack_rf <- caretStack(models, method='rf', metric='ROC', trControl=stack_control)")
+  Hint: stack_rf <- caretStack(models, method='rf', metric='ROC', trControl=stack_control)
+
+- Class: cmd_question
+  Output: "Type: stack_rf"
+  CorrectAnswer: stack_rf
+  AnswerTests: omnitest(correctExpr="stack_rf")
+  Hint: stack_rf
+
+- Class: text
+  Output: "Notice that the final ROC is much better compared to that of the individual primary model's ROC."
+
+- Class: cmd_question
+  Output: "Predict ionosphere class on the `training` dataset using `stack_rf`, calculate the accuracy, and assign the resulting value to `stacking_accuracy_train`:"
+  CorrectAnswer: stacking_accuracy_train <- mean(training$Class == predict(stack_rf, training))
+  AnswerTests: any_of_exprs("stacking_accuracy_train <- mean(training$Class == predict(stack_rf, training))", "stacking_accuracy_train <- mean(predict(stack_rf, training) == training$Class)")
+  Hint: stacking_accuracy_train <- mean(training$Class == predict(stack_rf, training))
+
+- Class: cmd_question
+  Output: "Predict ionosphere class on the `test` dataset using `stack_rf`, calculate the accuracy, and assign the resulting value to `stacking_accuracy_test`:"
+  CorrectAnswer: stacking_accuracy_test <- mean(test$Class == predict(stack_rf, test))
+  AnswerTests: any_of_exprs("stacking_accuracy_test <- mean(test$Class == predict(stack_rf, test))", "stacking_accuracy_test <- mean(predict(stack_rf, test) == test$Class)")
+  Hint: stacking_accuracy_test <- mean(test$Class == predict(stack_rf, test))
+
+- Class: cmd_question
+  Output: "Type: c(stacking_accuracy_train, stacking_accuracy_test, stacking_accuracy_train - stacking_accuracy_test)"
+  CorrectAnswer: c(stacking_accuracy_train, stacking_accuracy_test, stacking_accuracy_train - stacking_accuracy_test)
+  AnswerTests: omnitest(correctExpr="c(stacking_accuracy_train, stacking_accuracy_test, stacking_accuracy_train - stacking_accuracy_test)")
+  Hint: c(stacking_accuracy_train, stacking_accuracy_test, stacking_accuracy_train - stacking_accuracy_test)
+
+- Class: text
+  Output: "As we can see that we still have an overfitting problem with our stacked model. We may work on reducing variance of each primary model, and/or using a meta model that's less prone to overfitting, such as glm. Stacking could improve both bias and variance, but it usually takes effort to tune."
