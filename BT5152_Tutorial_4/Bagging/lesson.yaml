@@ -7,7 +7,7 @@
   Version: 2.4.3
 
 - Class: text
-  Output: "In this lesson, we'll learn to implement Bootstrap Aggregating (Bagging) and use bagging provided by the caret package."
+  Output: "In this lesson, we'll learn to implement Bootstrap Aggregating (Bagging) and use bagging provided by the caret package. We will apply bagging on a regression problem."
 
 - Class: cmd_question
   Output: "We will use the diamonds dataset from the ggplot2 package. The target outcome we are interested in is the `price` column, which is continuous numerical variable. We will use all other features to train our models. The data has been split into training and test sets, they are stored as tibbles in variables named `training` and `test` respectively. First have a look at the head of `training`:"
