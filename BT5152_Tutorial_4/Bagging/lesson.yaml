@@ -1,7 +1,92 @@
 - Class: meta
   Course: BT5152 Tutorial 4
   Lesson: Bagging
-  Author: your name goes here
+  Author: Wei Lu
   Type: Standard
-  Organization: your organization's name goes here
+  Organization: National University of Singapore
   Version: 2.4.3
+
+- Class: text
+  Output: "In this lesson, we'll learn to implement Bootstrap Aggregating (Bagging) and use bagging provided by the caret package."
+
+- Class: cmd_question
+  Output: "We will use the diamonds dataset from the ggplot2 package. The target outcome we are interested in is the `price` column, which is continuous numerical variable. We will use all other features to train our models. The data has been split into training and test sets, they are stored as tibbles in variables named `training` and `test` respectively. First have a look at the head of `training`:"
+  CorrectAnswer: head(training)
+  AnswerTests: omnitest(correctExpr="head(training)")
+  Hint: head(training)
+
+- Class: cmd_question
+  Output: "First, build an rpart model with the training data, assign the resulting model to `model_rpart`. Note that we've imported all the necessary packages for you, so you can use the functions directly."
+  CorrectAnswer: model_rpart <- rpart(price ~., training)
+  AnswerTests: any_of_exprs("model_rpart <- rpart(price ~., training)", "model_rpart <- rpart(price ~., data=training)")
+  Hint: model_rpart <- rpart(price ~., training)
+
+- Class: cmd_question
+  Output: "Predict diamond prices on the `training` dataset using `model_rpart`, and calculate the mean absolute error using function `mae` from the Metrics package:"
+  CorrectAnswer: mae(training$price, predict(model_rpart, training))
+  AnswerTests: any_of_exprs("mae(training$price, predict(model_rpart, training))", "mae(predict(model_rpart, training), training$price)")
+  Hint: mae(training$price, predict(model_rpart, training))
+
+- Class: cmd_question
+  Output: "Assign the above mae value to `rpart_mae_train`:"
+  CorrectAnswer: rpart_mae_train <- mae(training$price, predict(model_rpart, training))
+  AnswerTests: any_of_exprs("rpart_mae_train <- mae(training$price, predict(model_rpart, training))", "rpart_mae_train <- mae(predict(model_rpart, training), training$price)")
+  Hint: rpart_mae_train <- mae(training$price, predict(model_rpart, training))
+
+- Class: cmd_question
+  Output: "Similarly, predict diamond prices on the `test` dataset using the same model, calculate the MAE, and assign the resulting value to `rpart_mae_test`:"
+  CorrectAnswer: rpart_mae_test <- mae(test$price, predict(model_rpart, test))
+  AnswerTests: any_of_exprs("rpart_mae_test <- mae(test$price, predict(model_rpart, test))", "rpart_mae_train <- mae(predict(model_rpart, test), test$price)")
+  Hint: rpart_mae_test <- mae(test$price, predict(model_rpart, test))
+
+- Class: cmd_question
+  Output: "Calculate the difference between `rpart_mae_test` and `rpart_mae_train`:"
+  CorrectAnswer: rpart_mae_test - rpart_mae_train
+  AnswerTests: omnitest(correctExpr="rpart_mae_test - rpart_mae_train")
+  Hint: rpart_mae_test - rpart_mae_train
+
+- Class: script
+  Output: "Next let's implement an ensemble of rpart models, see if it can reduce the gap between our test error and training error. You will be editing a script. Once you are done, save the script and type `submit()` on the console to check correctness."
+  AnswerTests: test_train_bagging()
+  Hint: "The idea of ensemble is to repeated sample from the training data with replacement to form new training datasets. And for each new training dataset, we build a model. Our function train_bagging should return a list of rpart models."
+  Script: train_bagging.R
+
+- Class: cmd_question
+  Output: "Now we can invoke the function we just created `train_bagging`, with `25` and `training` to obtain a list of rpart models based on 25 sets of resampled training sets. Assign the returned models to `models`:"
+  CorrectAnswer: models <- train_bagging(25, training)
+  AnswerTests: omnitest(correctExpr="models <- train_bagging(25, training)")
+  Hint: models <- train_bagging(25, training)
+
+- Class: script
+  Output: "We can now make predictions using our list of models. Let's implement a function `predict_bagging` which accepts a list of models and test_data, and returns a single prediction that's the result of averaging predictions from all models in the list. Remember to save your script and type submit() to check correctness."
+  AnswerTests: test_predict_bagging()
+  Hint: "`prices` is a matrix of predicted prices, where each row correspond to a sample in `test_data`, and each column is a predicted price from one of the models. `rowSums` is a function that returns the sum of each row for a given matrix. You might find it useful."
+  Script: predict_bagging.R
+
+- Class: cmd_question
+  Output: "Next, invoke `predict_bagging` with `models` and `test` to predict diamond prices on the test dataset, and calculate MAE:"
+  CorrectAnswer: mae(test$price, predict_bagging(models, test))
+  AnswerTests: any_of_exprs("mae(test$price, predict_bagging(models, test))", "mae(predict_bagging(models, test), test$price)")
+  Hint: mae(test$price, predict_bagging(models, test))
+
+- Class: cmd_question
+  Output: "Assign the returned MAE value to `bagging_mae_test`"
+  CorrectAnswer: bagging_mae_test <- mae(test$price, predict_bagging(models, test))
+  AnswerTests: any_of_exprs("bagging_mae_test <- mae(test$price, predict_bagging(models, test))", "bagging_mae_test <- mae(predict_bagging(models, test), test$price)")
+  Hint: bagging_mae_test <- mae(test$price, predict_bagging(models, test))
+
+- Class: cmd_question
+  Output: "Similarly, predict diamond prices on the `training` dataset using our list of models, calculate the MAE, and assign the resulting value to `bagging_mae_train`:"
+  CorrectAnswer: bagging_mae_train <- mae(training$price, predict_bagging(models, training))
+  AnswerTests: any_of_exprs("bagging_mae_train <- mae(training$price, predict_bagging(models, training))", "bagging_mae_train <- mae(predict_bagging(models, training), training$price)")
+  Hint: bagging_mae_train <- mae(training$price, predict_bagging(models, training))
+
+- Class: cmd_question
+  Output: "Calculate the difference between `bagging_mae_test` and `bagging_mae_train`:"
+  CorrectAnswer: bagging_mae_test - bagging_mae_train
+  AnswerTests: omnitest(correctExpr="bagging_mae_test - bagging_mae_train")
+  Hint: bagging_mae_test - bagging_mae_train
+
+- Class: text
+  Output: "Notice that our simple bagging ensemble not only reduced the gap of training and test error (variance), it even improved overall prediction accuracy (bias)!"
+
