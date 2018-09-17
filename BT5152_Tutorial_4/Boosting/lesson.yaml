@@ -1,7 +1,118 @@
 - Class: meta
   Course: BT5152 Tutorial 4
   Lesson: Boosting
-  Author: your name goes here
+  Author: Wei Lu
   Type: Standard
-  Organization: your organization's name goes here
+  Organization: National University of Singapore
   Version: 2.4.3
+
+- Class: text
+  Output: "In this lesson, we'll learn to implement boosting and use adaboost provided by the caret package. We will apply boosting on a classification problem."
+
+- Class: cmd_question
+  Output: "We will be using the Ionosphere dataset from the mlbench package. The target outcome we are interested in is the `Class` column, which is a factor of two levels: good and bad. We will use all other features to train our models. The data has been split into training and test sets, they are stored as tibbles in variables named `training` and `test` respectively. First have a look at the head of `training`:"
+  CorrectAnswer: head(training)
+  AnswerTests: omnitest(correctExpr="head(training)")
+  Hint: head(training)
+
+- Class: cmd_question
+  Output: "Recall that rpart package supports both regression and classification. We've used it for regression in the bagging lesson. Now, build an rpart classification model with the training data, assign the resulting model to `model_rpart`. Note that we've imported all the necessary packages for you, so you can use the functions directly."
+  CorrectAnswer: model_rpart <- rpart(Class ~., training)
+  AnswerTests: any_of_exprs("model_rpart <- rpart(Class ~., training)", "model_rpart <- rpart(Class ~., data=training)")
+  Hint: model_rpart <- rpart(Class ~., training)
+
+- Class: cmd_question
+  Output: "Predict the ionosphere Class on the `training` dataset using `model_rpart` (remember to specify type='class'), and calculate the prediction accuracy using function `mean`:"
+  CorrectAnswer: mean(training$Class == predict(model_rpart, training, type='class'))
+  AnswerTests: any_of_exprs("mean(training$Class == predict(model_rpart, training, type='class'))", "mean(predict(model_rpart, training, type='class') == training$Class)")
+  Hint: mean(training$Class == predict(model_rpart, training, type='class'))
+
+- Class: cmd_question
+  Output: "Assign the above accuracy value to `rpart_accuracy_train`:"
+  CorrectAnswer: rpart_accuracy_train <- mean(training$Class == predict(model_rpart, training, type='class'))
+  AnswerTests: any_of_exprs("rpart_accuracy_train <- mean(training$Class == predict(model_rpart, training, type='class'))", "rpart_accuracy_train <- mean(predict(model_rpart, training, type='class') == training$Class)")
+  Hint: rpart_accuracy_train <- mean(training$Class == predict(model_rpart, training, type='class'))
+
+- Class: cmd_question
+  Output: "Similarly, predict ionosphere Class on the `test` dataset using the same model, calculate the accuracy, and assign the resulting value to `rpart_accuracy_test`:"
+  CorrectAnswer: rpart_accuracy_test <- mean(test$Class == predict(model_rpart, test, type='class'))
+  AnswerTests: any_of_exprs("rpart_accuracy_test <- mean(test$Class == predict(model_rpart, test, type='class'))", "rpart_accuracy_test <- mean(predict(model_rpart, test, type='class') == test$Class)")
+  Hint: rpart_accuracy_test <- mean(test$Class == predict(model_rpart, test, type='class'))
+
+- Class: cmd_question
+  Output: "Calculate the difference between `rpart_accuracy_train` and `rpart_accuracy_test`:"
+  CorrectAnswer: rpart_accuracy_train - rpart_accuracy_test
+  AnswerTests: omnitest(correctExpr="rpart_accuracy_train - rpart_accuracy_test")
+  Hint: rpart_accuracy_train - rpart_accuracy_test
+
+- Class: script
+  Output: "There seems to be some overfitting (high variance) issue judging from the gap between training and test accuracy, but let's set that aside for now. Perhaps there's room for improvement even on the bias front. Let's implement an ensemble of rpart models with boosting, see if it can improve both the training and test accuracy. You will be editing a script. Once you are done, save the script and type `submit()` on the console to check correctness."
+  AnswerTests: test_train_boosting()
+  Hint: "The idea is that the bigger the distance between actual and predicted probability of a given sample, the more weights we want to assign to this particular sample, so it's more likely to be selected in the next round of training. Set `weights <- err/sum(err)`"
+  Script: train_boosting.R
+
+- Class: cmd_question
+  Output: "Now we can invoke the function we just created `train_boosting`, with `25` and `training` to obtain a list of rpart models based on 25 sets of weighted resampled training sets. Assign the returned models to `models`:"
+  CorrectAnswer: models <- train_boosting(25, training)
+  AnswerTests: omnitest(correctExpr="models <- train_boosting(25, training)")
+  Hint: models <- train_boosting(25, training)
+
+- Class: script
+  Output: "We can now make predictions using our list of models. Let's implement a function `predict_boosting` which accepts a list of models and test_data, and returns a single prediction that's the result of applying majority voting on predictions from all models in the list. Remember to save your script and type submit() to check correctness."
+  AnswerTests: test_predict_boosting()
+  Hint: "You are expected to implement majority voting here. Try `names(which.max(table(row)))`"
+  Script: predict_boosting.R
+
+- Class: cmd_question
+  Output: "Next, invoke `predict_boosting` with `models` and `test` to predict ionosphere Class on the test dataset, and calculate prediction accuracy:"
+  CorrectAnswer: mean(test$Class == predict_boosting(models, test))
+  AnswerTests: any_of_exprs("mean(test$Class == predict_boosting(models, test))", "mean(predict_boosting(models, test) == test$Class)")
+  Hint: mean(test$Class == predict_boosting(models, test))
+
+- Class: cmd_question
+  Output: "Assign the returned accuracy value to `boosting_accuracy_test`"
+  CorrectAnswer: boosting_accuracy_test <- mean(test$Class == predict_boosting(models, test))
+  AnswerTests: any_of_exprs("boosting_accuracy_test <- mean(test$Class == predict_boosting(models, test))", "boosting_accuracy_test <- mean(predict_boosting(models, test) == test$Class)")
+  Hint: boosting_accuracy_test <- mean(test$Class == predict_boosting(models, test))
+
+- Class: cmd_question
+  Output: "Similarly, predict ionosphere class on the `training` dataset using our list of models, calculate the accuracy, and assign the resulting value to `boosting_accuracy_train`:"
+  CorrectAnswer: boosting_accuracy_train <- mean(training$Class == predict_boosting(models, training))
+  AnswerTests: any_of_exprs("boosting_accuracy_train <- mean(training$Class == predict_boosting(models, training))", "boosting_accuracy_train <- mean(predict_boosting(models, training) == training$Class)")
+  Hint: boosting_accuracy_train <- mean(training$Class == predict_boosting(models, training))
+
+- Class: cmd_question
+  Output: "Calculate the difference between `boosting_accuracy_train` and `boosting_accuracy_test`:"
+  CorrectAnswer: boosting_accuracy_train - boosting_accuracy_test
+  AnswerTests: omnitest(correctExpr="boosting_accuracy_train - boosting_accuracy_test")
+  Hint: boosting_accuracy_train - boosting_accuracy_test
+
+- Class: text
+  Output: "Notice that our simple boosting ensemble mosting only improved the training accuracy and had minimal effect on the test accuracy. Recall that boosting is most effective for reducing bias. This is a sign that perhaps bias isn't the biggest problem with our original model. In practice, this is where we should consider switching gear and focus on improving variance instead. But for the purpose of this exercise, suppose we are not convinced that our implementation of boosting is good enough. Let's try adaboost through the caret package!"
+
+- Class: cmd_question
+  Output: "One of the available model is 'AdaBag' which implements adaboost for boosting on rpart classifiers internally. To limit the running time, let's fix the maxdepth of the rpart tree to be 30, which is the default value in rpart.control; and also set the rounds of boosting to 10 through mfinal. Train a model named `model_adaboost` using: method='AdaBag', trControl=trainControl(method='cv', number=5), tuneGrid=expand.grid(.mfinal=10, .maxdepth=30):"
+  CorrectAnswer: model_adaboost <- train(Class ~ ., data=training, method='AdaBag', trControl=trainControl(method='cv', number=5), tuneGrid=expand.grid(.mfinal=10, .maxdepth=30))
+  AnswerTests: any_of_exprs("model_adaboost <- train(Class ~ ., data=training, method='AdaBag', trControl=trainControl(method='cv', number=5), tuneGrid=expand.grid(.mfinal=10, .maxdepth=30))", "model_adaboost <- train(Class ~ ., training, method='AdaBag', trControl=trainControl(method='cv', number=5), tuneGrid=expand.grid(.mfinal=10, .maxdepth=30))")
+  Hint: model_adaboost <- train(Class ~ ., data=training, method='AdaBag', trControl=trainControl(method='cv', number=5), tuneGrid=expand.grid(.mfinal=10, .maxdepth=30))
+
+- Class: cmd_question
+  Output: "Predict ionosphere class on the `training` dataset using `model_adaboost`, calculate the accuracy, and assign the resulting value to `adaboost_accuracy_train`:"
+  CorrectAnswer: adaboost_accuracy_train <- mean(training$Class == predict(model_adaboost, training))
+  AnswerTests: any_of_exprs("adaboost_accuracy_train <- mean(training$Class == predict(model_adaboost, training))", "adaboost_accuracy_train <- mean(predict(model_adaboost, training) == training$Class)")
+  Hint: adaboost_accuracy_train <- mean(training$Class == predict(model_adaboost, training))
+
+- Class: cmd_question
+  Output: "Predict ionosphere class on the `test` dataset using `model_adaboost`, calculate the accuracy, and assign the resulting value to `adaboost_accuracy_test`:"
+  CorrectAnswer: adaboost_accuracy_test <- mean(test$Class == predict(model_adaboost, test))
+  AnswerTests: any_of_exprs("adaboost_accuracy_test <- mean(test$Class == predict(model_adaboost, test))", "adaboost_accuracy_test <- mean(predict(model_adaboost, test) == test$Class)")
+  Hint: adaboost_accuracy_test <- mean(test$Class == predict(model_adaboost, test))
+
+- Class: cmd_question
+  Output: "Calculate the difference between `adaboost_accuracy_train` and `adaboost_accuracy_test`:"
+  CorrectAnswer: adaboost_accuracy_train - adaboost_accuracy_test
+  AnswerTests: omnitest(correctExpr="adaboost_accuracy_train - adaboost_accuracy_test")
+  Hint: adaboost_accuracy_train - adaboost_accuracy_test
+
+- Class: text
+  Output: "Again, adaboost only managed to improve the training accuracy and has minimal effect on the test accuracy. By now, we should be reasonably convinced that the rpart model on this dataset has more room for improvement on the variance front compared to the bias front."
