@@ -4,5 +4,5 @@ rpart
 C50
 e1071
 caret
-caretEnsemble
 randomForest
+devtools

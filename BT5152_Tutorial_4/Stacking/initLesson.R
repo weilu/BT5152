@@ -1,3 +1,7 @@
+# https://github.com/zachmayer/caretEnsemble/issues/228
+library(devtools)
+devtools::install_github('zachmayer/caretEnsemble')
+
 library(tidyverse)
 library(mlbench)
 library(rpart)
