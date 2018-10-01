@@ -1,7 +1,154 @@
 - Class: meta
   Course: BT5152 Tutorial 5
   Lesson: XGBoost
-  Author: your name goes here
+  Author: Wei Lu
   Type: Standard
-  Organization: your organization's name goes here
+  Organization: National University of Singapore
   Version: 2.4.3
+
+- Class: text
+  Output: "In this lesson, we'll learn to use the xgboost package and caret package to train & tune models for a classification problem."
+
+- Class: cmd_question
+  Output: "We will be using the Ionosphere dataset from the mlbench package. The target outcome we are interested in is the `Class` column, which is a factor of two levels: good and bad. We will use all other features to train our models. The data has been split into training and test sets, they are stored as tibbles in variables named `training` and `test` respectively. First have a look at the head of `training`:"
+  CorrectAnswer: head(training)
+  AnswerTests: omnitest(correctExpr="head(training)")
+  Hint: head(training)
+
+- Class: cmd_question
+  Output: "To use the `xgboost` package for classification, we will need to first convert the our target outcome variable `Class` from factors of 'good' and 'bad' to a numeric vector of 0s and 1s. good => 0, bad => 1. Use function `ifelse` to create a new numeric vector variable named `train_label_binary` to store the converted `Class` column of the `training` data: "
+  CorrectAnswer: "train_label_binary <- ifelse(training$Class == 'good', 0, 1)"
+  AnswerTests: any_of_exprs("train_label_binary <- ifelse(training$Class == 'good', 0, 1)", "train_label_binary <- ifelse(training$Class == 'bad', 1, 0)")
+  Hint: "Use function `ifelse` to test if training$Class is 'good' or 'bad'. Note that good => 0, bad => 1"
+
+- Class: cmd_question
+  Output: "Do the same to the `Class` column of the `test` dataset, store the converted 0/1 numeric vector in variable named `test_label_binary`"
+  CorrectAnswer: "test_label_binary <- ifelse(test$Class == 'good', 0, 1)"
+  AnswerTests: any_of_exprs("test_label_binary <- ifelse(test$Class == 'good', 0, 1)", "test_label_binary <- ifelse(test$Class == 'bad', 1, 0)")
+  Hint: "Use function `ifelse` to test if test$Class is 'good' or 'bad'. Note that good => 0, bad => 1"
+
+- Class: cmd_question
+  Output: "xgboost also doesn't take data.frame directly as an input argument, instead it needs an xgb.DMatrix object. Create an xgb.DMatrix object from the `training` data, and use train_label_binary as the label= argument. Remember to exclude the `Class` column  Store the returned object in `train_matrix`:"
+  CorrectAnswer: "train_matrix <- xgb.DMatrix(as.matrix(select(training, -Class)), label=train_label_binary)"
+  AnswerTests: any_of_exprs("train_matrix <- xgb.DMatrix(as.matrix(select(training, -Class)), label=train_label_binary)", "train_matrix <- xgb.DMatrix(as.matrix(training %>% select(-Class)), label=train_label_binary)")
+  Hint: "The first argument to xgb.DMatrix needs to be a matrix object. Function `as.matrix` might come handy."
+
+- Class: cmd_question
+  Output: "Similarly, create a `test_matrix` object of type xgb.DMatrix from the `test` dataset and `test_label_binary`:"
+  CorrectAnswer: "test_matrix <- xgb.DMatrix(as.matrix(select(test, -Class)), label=test_label_binary)"
+  AnswerTests: any_of_exprs("test_matrix <- xgb.DMatrix(as.matrix(select(test, -Class)), label=test_label_binary)", "test_matrix <- xgb.DMatrix(as.matrix(test %>% select(-Class)), label=test_label_binary)")
+  Hint: "test_matrix <- xgb.DMatrix(as.matrix(select(test, -Class)), label=test_label_binary)"
+
+- Class: cmd_question
+  Output: "Now we are ready to train our xgboost model and make predictions. Build a xgboost model with the `xgboost` function with train_matrix, using 20 rounds of boosting. By default the training objective is linear regression (reg:linear), since we have a classification problem at hand, we want to specify the objective='binary:logistic'. Store the returned model in a variable named `model_xgb`:"
+  CorrectAnswer: "model_xgb <- xgboost(data=train_matrix, nrounds=20, objective='binary:logistic')"
+  AnswerTests: omnitest(correctExpr="model_xgb <- xgboost(data=train_matrix, nrounds=20, objective='binary:logistic')")
+  Hint: "Use nrounds= to specify the number of iterations of boosting."
+
+- Class: cmd_question
+  Output: "Noticed from the training output that our train error has been reduced all the way down to 0 through boosting! Next, use the trained `model_xgb` to predict the outcome variable of `test_matrix`. Note that by default, the returned predictions are probabilities that a datum will be classified as 1. Store the returned values in `pred_prob`:"
+  CorrectAnswer: "pred_prob <- predict(model_xgb, test_matrix)"
+  AnswerTests: omnitest(correctExpr="pred_prob <- predict(model_xgb, test_matrix)")
+  Hint: "pred_prob <- predict(model_xgb, test_matrix)"
+
+- Class: cmd_question
+  Output: "We can convert the probability values to a numeric vector of 0s and 1s for comparison with the actual classes in `test_label_binary`. If a probability value is > 0.5, we rule it as 1 (bad); otherwise 0 (good). Perform the described conversion on pred_prob and store the returned numeric vector in `pred_xgb`:"
+  CorrectAnswer: "pred_xgb <- as.numeric(pred_prob > 0.5)"
+  AnswerTests: any_of_exprs("pred_xgb <- as.numeric(pred_prob > 0.5)", "pred_xgb <- ifelse(pred_prob > 0.5, 1, 0)")
+  Hint: "`pred_prob > 0.5` returns a vector of TRUE/FALSE values. Use as.numeric to convert it to 1s and 0s."
+
+- Class: cmd_question
+  Output: "Use function `mean` to compute the prediction accuracy on the test dataset `test_label_binary`:"
+  CorrectAnswer: "mean(pred_xgb == test_label_binary)"
+  AnswerTests: any_of_exprs("mean(pred_xgb == test_label_binary)", "mean(test_label_binary == pred_xgb)")
+  Hint: "mean(pred_xgb == test_label_binary)"
+
+- Class: cmd_question
+  Output: "Our resulting prediction accuracy is not bad with all the default settings! But there's still a significant gap between our training accuracy (100%) and our test accuracy, which indicates potential overfitting. By default, the evaluation metric is error = 1 - accuracy for classification. We can set the evaluation metric to be AUC with `eval_metric='auc'` and see if it makes any difference. Keep all the other argument the same, build a model named `model_xgb_auc`:"
+  CorrectAnswer: "model_xgb_auc <- xgboost(data=train_matrix, nrounds=20, objective='binary:logistic', eval_metric='auc')"
+  AnswerTests: omnitest(correctExpr="model_xgb_auc <- xgboost(data=train_matrix, nrounds=20, objective='binary:logistic', eval_metric='auc')")
+  Hint: "model_xgb_auc <- xgboost(data=train_matrix, nrounds=20, objective='binary:logistic', eval_metric='auc')"
+
+- Class: cmd_question
+  Output: "Let's use `model_xgb_auc` to produce a numeric 0/1 predictions on `test_matrix`, and store the returned values in `pred_xgb_auc`:"
+  CorrectAnswer: "pred_xgb_auc <- as.numeric(predict(model_xgb_auc, test_matrix) > 0.5)"
+  AnswerTests: any_of_exprs("pred_xgb_auc <- as.numeric(predict(model_xgb_auc, test_matrix) > 0.5)", "pred_xgb_auc <- ifelse(predict(model_xgb_auc, test_matrix) > 0.5, 1, 0)")
+  Hint: "pred_xgb_auc <- as.numeric(predict(model_xgb_auc, test_matrix) > 0.5)"
+
+- Class: cmd_question
+  Output: "Use function `mean` to compute the prediction accuracy of `model_xgb_auc` on the test dataset `test_label_binary`:"
+  CorrectAnswer: "mean(pred_xgb_auc == test_label_binary)"
+  AnswerTests: any_of_exprs("mean(pred_xgb_auc == test_label_binary)", "mean(test_label_binary == pred_xgb_auc)")
+  Hint: "mean(pred_xgb_auc == test_label_binary)"
+
+- Class: cmd_question
+  Output: "Unfortunately specifying auc as the evaluation metric didn't make much of a difference in this case. Let's try setting a higher gamma value to further regularize our model, see if it reduces overfitting. By default gamma is set to 0, let's increase it to 10. Use the same nrounds and objective, and the default eval_metric to build the model. Store the resulting model in `model_xgb_gamma_10`:"
+  CorrectAnswer: "model_xgb_gamma_10 <- xgboost(data=train_matrix, nrounds=20, objective='binary:logistic', gamma=10)"
+  AnswerTests: omnitest(correctExpr="model_xgb_gamma_10 <- xgboost(data=train_matrix, nrounds=20, objective='binary:logistic', gamma=10)")
+  Hint: "model_xgb_gamma_10 <- xgboost(data=train_matrix, nrounds=20, objective='binary:logistic', gamma=10)"
+
+- Class: cmd_question
+  Output: "Now use `model_xgb_gamma_10` to produce a numeric 0/1 predictions on the test_matrix, and store the returned values in `pred_xgb_gamma_10`:"
+  CorrectAnswer: "pred_xgb_gamma_10 <- as.numeric(predict(model_xgb_gamma_10, test_matrix) > 0.5)"
+  AnswerTests: any_of_exprs("pred_xgb_gamma_10 <- as.numeric(predict(model_xgb_gamma_10, test_matrix) > 0.5)", "pred_xgb_gamma_10 <- ifelse(predict(model_xgb_gamma_10, test_matrix) > 0.5, 1, 0)")
+  Hint: "pred_xgb_gamma_10 <- as.numeric(predict(model_xgb_gamma_10, test_matrix) > 0.5)"
+
+- Class: cmd_question
+  Output: "Use function `mean` to compute the prediction accuracy of `model_xgb_gamma_10` on the test dataset:"
+  CorrectAnswer: "mean(pred_xgb_gamma_10 == test_label_binary)"
+  AnswerTests: any_of_exprs("mean(pred_xgb_gamma_10 == test_label_binary)", "mean(test_label_binary == pred_xgb_gamma_10)")
+  Hint: "mean(pred_xgb_gamma_10 == test_label_binary)"
+
+- Class: cmd_question
+  Output: "Big test accuracy improvement! xgboost package comes with the feature which allows us to look at feature importance. Apply function `xgb.importance` on our `model_xgb_gamma_10`:"
+  CorrectAnswer: "xgb.importance(model=model_xgb_gamma_10)"
+  AnswerTests: omnitest(correctExpr="xgb.importance(model=model_xgb_gamma_10)")
+  Hint: "xgb.importance(model=model_xgb_gamma_10)"
+
+- Class: cmd_question
+  Output: "We can also plot `model_xgb_gamma_10` to visualize all the trees constructed using `xgb.plot.tree`:"
+  CorrectAnswer: "xgb.plot.tree(model=model_xgb_gamma_10)"
+  AnswerTests: omnitest(correctExpr="xgb.plot.tree(model=model_xgb_gamma_10)")
+  Hint: "xgb.plot.tree(model=model_xgb_gamma_10)"
+
+- Class: cmd_question
+  Output: "Perhaps we just got lucky with the test data and our gamma setting. To select a model with more confidence, let's perform hyperparameter tuning with corss validation through an extensive grid search. xgboost is also available through caret, which not only provides the tuning harness, but also allows us to pass data.frame and formula into the `train` function like we did building other models. First, let's create a tuning grid named `grid` with the following arguments: .max_depth=c(1, 3, 6), .min_child_weight=c(1, 5), .gamma=c(0, 1, 10), .subsample=c(0.8, 1), .colsample_bytree=c(0.8, 1), .nrounds=c(20, 100), .eta=c(0.01, 0.3, 0.6). Store the returned object in `grid`:"
+  CorrectAnswer: "grid <- expand.grid(.max_depth=c(1, 3, 6), .min_child_weight=c(1, 5), .gamma=c(0, 1, 10), .subsample=c(0.8, 1), .colsample_bytree=c(0.8, 1), .nrounds=c(20, 100), .eta=c(0.01, 0.3, 0.6))"
+  AnswerTests: omnitest(correctExpr="grid <- expand.grid(.max_depth=c(1, 3, 6), .min_child_weight=c(1, 5), .gamma=c(0, 1, 10), .subsample=c(0.8, 1), .colsample_bytree=c(0.8, 1), .nrounds=c(20, 100), .eta=c(0.01, 0.3, 0.6))")
+  Hint: "grid <- expand.grid(.max_depth=c(1, 3, 6), .min_child_weight=c(1, 5), .gamma=c(0, 1, 10), .subsample=c(0.8, 1), .colsample_bytree=c(0.8, 1), .nrounds=c(20, 100), .eta=c(0.01, 0.3, 0.6))"
+
+- Class: text
+  Output: "In case you are wondering how do we know to search the above list of hyperparameters, they are recommended tuning parameters documented on xgboost website: https://xgboost.readthedocs.io/en/latest/tutorials/param_tuning.html"
+
+- Class: cmd_question
+  Output: "Next, let's create a 5-fold cross validation `trainControl` object and store it in `ctrl`:"
+  CorrectAnswer: "ctrl <- trainControl(method = 'cv', number = 5)"
+  AnswerTests: omnitest(correctExpr="ctrl <- trainControl(method = 'cv', number = 5)")
+  Hint: "ctrl <- trainControl(method = 'cv', number = 5)"
+
+- Class: cmd_question
+  Output: "Now invoke the `train` function from the caret package with `method='xgbTree'` and appropriate formula, data, trControl, tuneGrid arguments. Assign the returned model to model_xgb_tuned. This may take a few minutes. Grab a drink!"
+  CorrectAnswer: "model_xgb_tuned <- train(Class ~ ., data=training, method='xgbTree', trControl=ctrl, tuneGrid=grid)"
+  AnswerTests: omnitest(correctExpr="model_xgb_tuned <- train(Class ~ ., data=training, method='xgbTree', trControl=ctrl, tuneGrid=grid)")
+  Hint:  "model_xgb_tuned <- train(Class ~ ., data=training, method='xgbTree', trControl=ctrl, tuneGrid=grid)"
+
+- Class: cmd_question
+  Output: "Let's have a look at the selected model's hyperparamters. Type model_xgb_tuned$bestTune"
+  CorrectAnswer: "model_xgb_tuned$bestTune"
+  AnswerTests: omnitest(correctExpr="model_xgb_tuned$bestTune")
+  Hint: "model_xgb_tuned$bestTune"
+
+- Class: cmd_question
+  Output: "Use `model_xgb_tuned` to predict Class of the `test` dataset. Store the returned values in `pred_xgb_tuned`."
+  CorrectAnswer: "pred_xgb_tuned <- predict(model_xgb_tuned, test)"
+  AnswerTests: omnitest(correctExpr="pred_xgb_tuned <- predict(model_xgb_tuned, test)")
+  Hint: "pred_xgb_tuned <- predict(model_xgb_tuned, test)"
+
+- Class: cmd_question
+  Output: "Note that since we are using caret, `predict` returns a vector of factor values which we can compare directly with test$Class. Use function `mean` to compute the prediction accuracy on the `test` dataset:"
+  CorrectAnswer: "mean(pred_xgb_tuned == test$Class)"
+  AnswerTests: any_of_exprs("mean(pred_xgb_tuned == test$Class)", "mean(test$Class == pred_xgb_tuned)")
+  Hint: "mean(pred_xgb_tuned == test$Class)"
+
+- Class: text
+  Output: "Looks like we did simply get lucky with our previous gamma=10 value. Since the caret selected model is cross validated, it's likely to be more trustworthy than our model_xgb_gamma_10, therefore the prediction results produced by `model_xgb_tuned` are more likely to generalize better to new data."
