@@ -30,13 +30,13 @@
 - Class: cmd_question
   Output: "xgboost also doesn't take data.frame directly as an input argument, instead it needs an xgb.DMatrix object. Create an xgb.DMatrix object from the `training` data, and use train_label_binary as the label= argument. Remember to exclude the `Class` column  Store the returned object in `train_matrix`:"
   CorrectAnswer: "train_matrix <- xgb.DMatrix(as.matrix(select(training, -Class)), label=train_label_binary)"
-  AnswerTests: any_of_exprs("train_matrix <- xgb.DMatrix(as.matrix(select(training, -Class)), label=train_label_binary)", "train_matrix <- xgb.DMatrix(as.matrix(training %>% select(-Class)), label=train_label_binary)")
+  AnswerTests: any_of_exprs("train_matrix <- xgb.DMatrix(as.matrix(select(training, -Class)), label=train_label_binary)", "train_matrix <- xgb.DMatrix(as.matrix(training %>% select(-Class)), label=train_label_binary)", "train_matrix <- xgb.DMatrix(as.matrix(dplyr::select(training, -Class)), label=train_label_binary)", "train_matrix <- xgb.DMatrix(as.matrix(training %>% dplyr::select(-Class)), label=train_label_binary)")
   Hint: "The first argument to xgb.DMatrix needs to be a matrix object. Function `as.matrix` might come handy."
 
 - Class: cmd_question
   Output: "Similarly, create a `test_matrix` object of type xgb.DMatrix from the `test` dataset and `test_label_binary`:"
   CorrectAnswer: "test_matrix <- xgb.DMatrix(as.matrix(select(test, -Class)), label=test_label_binary)"
-  AnswerTests: any_of_exprs("test_matrix <- xgb.DMatrix(as.matrix(select(test, -Class)), label=test_label_binary)", "test_matrix <- xgb.DMatrix(as.matrix(test %>% select(-Class)), label=test_label_binary)")
+  AnswerTests: any_of_exprs("test_matrix <- xgb.DMatrix(as.matrix(select(test, -Class)), label=test_label_binary)", "test_matrix <- xgb.DMatrix(as.matrix(test %>% select(-Class)), label=test_label_binary)", "test_matrix <- xgb.DMatrix(as.matrix(dplyr::select(test, -Class)), label=test_label_binary)", "test_matrix <- xgb.DMatrix(as.matrix(test %>% dplyr::select(-Class)), label=test_label_binary)")
   Hint: "test_matrix <- xgb.DMatrix(as.matrix(select(test, -Class)), label=test_label_binary)"
 
 - Class: cmd_question
