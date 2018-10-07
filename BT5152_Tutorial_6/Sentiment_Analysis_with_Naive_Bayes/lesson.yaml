@@ -1,0 +1,121 @@
+- Class: meta
+  Course: BT5152 Tutorial 6
+  Lesson: Sentiment Analysis with Naive Bayes
+  Author: Kee Yuan Chuan
+  Type: Standard
+  Organization: National University of Singapore
+  Version: 2.4.3
+
+- Class: text
+  Output: 'If you have not completed the Word Cloud lesson, please complete it first before attempting this lesson.'
+
+- Class: text
+  Output: 'In this lesson, we are going to build a text classifier to determine whether the text is positive or negative sentiment. We are going to use the same movies review dataset from IMDB (http://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz), which has been downloaded and extracted for you in the folder `data`.'
+
+- Class: text
+  Output: 'We are going to load both the positive and negative sentiment data this time. However, just like previous lesson, take a sample of 1000 for each.'
+
+- Class: cmd_question
+  Output: "Let's start by loading the positive sentiment training data as train_pos."
+  CorrectAnswer: train_pos <- VCorpus(DirSource("data/aclImdb/train/pos"))[sample(1000)]
+  AnswerTests: expr_identical_to('train_pos <- VCorpus(DirSource("data/aclImdb/train/pos"))[sample(1000)]')
+  Hint: Enter train_pos <- VCorpus(DirSource("data/aclImdb/train/pos"))[sample(1000)]
+
+- Class: cmd_question
+  Output: "Then load the negative sentiment training data as train_neg."
+  CorrectAnswer: train_neg <- VCorpus(DirSource("data/aclImdb/train/neg"))[sample(1000)]
+  AnswerTests: expr_identical_to('train_neg <- VCorpus(DirSource("data/aclImdb/train/neg"))[sample(1000)]')
+  Hint: Enter train_neg <- VCorpus(DirSource("data/aclImdb/train/neg"))[sample(1000)]
+
+- Class: cmd_question
+  Output: "VCorpus can help us to manage metadata of the corpus we have loaded using the `meta` function. Let's set an indexed type metadata called LABEL as `neg` for train_neg."
+  CorrectAnswer: meta(train_neg, "LABEL", type = "indexed") <- "neg"
+  AnswerTests: expr_identical_to('meta(train_neg, "LABEL", type = "indexed") <- "neg"')
+  Hint: Enter meta(train_neg, "LABEL", type = "indexed") <- "neg"
+
+- Class: cmd_question
+  Output: "Likewise, set an indexed type metadata called LABEL as `pos` for train_pos."
+  CorrectAnswer: meta(train_pos, "LABEL", type = "indexed") <- "pos"
+  AnswerTests: expr_identical_to('meta(train_pos, "LABEL", type = "indexed") <- "pos"')
+  Hint: Enter meta(train_pos, "LABEL", type = "indexed") <- "pos"
+
+- Class: cmd_question
+  Output: "Using the metadata that we have set, we can obtain the labels of combined corpus (train_pos and train_neg) as a data frame easily by using `meta` with both `train_neg` and `train_pos` concatenated. Create a variable named train_label for this."
+  CorrectAnswer: train_label <- as.factor(meta(c(train_neg, train_pos))$LABEL)
+  AnswerTests: expr_identical_to('train_label <- as.factor(meta(c(train_neg, train_pos))$LABEL)')
+  Hint: Enter train_label <- as.factor(meta(c(train_neg, train_pos))$LABEL)
+
+- Class: cmd_question
+  Output: We need to create control parameters (weighting as weightTf and remove all stopwords, numbers, punctuations and lowercase all the words) for the DocumentTermMatrix.
+  CorrectAnswer: dtm_control <- list(weighting = weightTf, tolower = TRUE, removeNumbers = TRUE, stopwords = TRUE, removePunctuation = TRUE)
+  AnswerTests: expr_identical_to('dtm_control <- list(weighting = weightTf, tolower = TRUE, removeNumbers = TRUE, stopwords = TRUE, removePunctuation = TRUE)')
+  Hint: Enter dtm_control <- list(weighting = weightTf, tolower = TRUE, removeNumbers = TRUE, stopwords = TRUE, removePunctuation = TRUE)
+
+- Class: cmd_question
+  Output: 'Create DocumentTermMatrix named tf_dtm with both train_pos and train_neg with dtm_control'
+  CorrectAnswer: tf_dtm <- DocumentTermMatrix(c(train_pos, train_neg), control = dtm_control)
+  AnswerTests: expr_identical_to('tf_dtm <- DocumentTermMatrix(c(train_pos, train_neg), control = dtm_control)')
+  Hint: Enter tf_dtm <- DocumentTermMatrix(c(train_pos, train_neg), control = dtm_control)
+
+- Class: cmd_question
+  Output: "First of all, we want to make use of words with high frequencies (> 10) as features to the classifier. To do so, we can use findFreqTerms from tm package on a DocumentTermMatrix."
+  CorrectAnswer: freq_terms <- findFreqTerms(tf_dtm, lowfreq = 10)
+  AnswerTests: expr_identical_to('freq_terms <- findFreqTerms(tf_dtm, lowfreq = 10)')
+  Hint: Enter freq_terms <- findFreqTerms(tf_dtm, lowfreq = 10)
+
+- Class: cmd_question
+  Output: With the high frequency terms, we want to limit the terms in DocumentTermMatrix to just only these high frequency terms. Add a key called dictionary to dtm_control with value as freq_terms
+  CorrectAnswer: dtm_control$dictionary <- freq_terms
+  AnswerTests: expr_identical_to('dtm_control$dictionary <- freq_terms')
+  Hint: Enter dtm_control$dictionary <- freq_terms
+
+- Class: cmd_question
+  Output: Now, re-create tf_dtm with the amended dtm_control.
+  CorrectAnswer: tf_dtm <- DocumentTermMatrix(c(train_pos, train_neg), control = dtm_control)
+  AnswerTests: expr_identical_to('tf_dtm <- DocumentTermMatrix(c(train_pos, train_neg), control = dtm_control)')
+  Hint: Enter tf_dtm <- DocumentTermMatrix(c(train_pos, train_neg), control = dtm_control)
+
+- Class: cmd_question
+  Output: "Create a variable features_df to store tf_dtm in data frame. (Remember to use tbl_df!)"
+  CorrectAnswer: features_df <- tbl_df(data.frame(as.matrix(tf_dtm)))
+  AnswerTests: expr_identical_to('features_df <- tbl_df(data.frame(as.matrix(tf_dtm)))')
+  Hint: Enter features_df <- tbl_df(data.frame(as.matrix(tf_dtm)))
+
+- Class: cmd_question
+  Output: "Let's remove columns with near zero variance with nearZeroVar function from caret! This will reduce the dimensions and make it easier for training. Create a variable named nzv_columns for this."
+  CorrectAnswer: nzv_columns <- nearZeroVar(features_df)
+  AnswerTests: expr_identical_to('nzv_columns <- nearZeroVar(features_df)')
+  Hint: Enter nzv_columns <- nearZeroVar(features_df)
+
+- Class: cmd_question
+  Output: "Now, remove all the columns from features_df that has near zero variance."
+  CorrectAnswer: features_df <- features_df[, -nzv_columns]
+  AnswerTests: expr_identical_to('features_df <- features_df[, -nzv_columns]')
+  Hint: Enter features_df <- features_df[, -nzv_columns]
+
+- Class: cmd_question
+  Output: "Let's create a variable called model_control to do 5-fold cross validation."
+  CorrectAnswer: model_control <- trainControl(method = 'cv', number = 5)
+  AnswerTests: expr_identical_to('model_control <- trainControl(method = 'cv', number = 5)')
+  Hint: Enter model_control <- trainControl(method = 'cv', number = 5)
+
+- Class: cmd_question
+  Output: "We can now train a model using Naive Bayes algorithm."
+  CorrectAnswer: model <- train(features_df, train_label, method = 'nb', trControl = model_control)
+  AnswerTests: expr_identical_to('model <- train(features_df, train_label, method = 'nb', trControl = model_control)')
+  Hint: Enter model <- train(features_df, train_label, method = 'nb', trControl = model_control)
+
+- Class: cmd_question
+  Output: "Let's check the predictions of the training data. Create a variable called pred for this."
+  CorrectAnswer: pred <- predict(model$finalModel, features_df)
+  AnswerTests: expr_identical_to('pred <- predict(model$finalModel, features_df)')
+  Hint: Enter pred <- predict(model$finalModel, features_df)
+
+- Class: cmd_question
+  Output: "Take a look at the confusion matrix between the predicted class and the training label"
+  CorrectAnswer: confusionMatrix(pred$class, train_label)
+  AnswerTests: expr_identical_to('confusionMatrix(pred$class, train_label)')
+  Hint: Enter confusionMatrix(pred$class, train_label)
+
+- Class: text
+  Output: "Of course you should run the model through the test data. Try it out after this lesson."
