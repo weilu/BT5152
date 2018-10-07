@@ -46,9 +46,9 @@
   Hint: Enter train_label <- as.factor(meta(c(train_neg, train_pos))$LABEL)
 
 - Class: cmd_question
-  Output: We need to create control parameters (weighting as weightTf and remove all stopwords, numbers, punctuations and lowercase all the words) for the DocumentTermMatrix.
+  Output: We need to create control parameters named as dtm_control as a list with weighting as weightTf and remove all stopwords, numbers, punctuations and lowercase all the words for the DocumentTermMatrix.
   CorrectAnswer: dtm_control <- list(weighting = weightTf, tolower = TRUE, removeNumbers = TRUE, stopwords = TRUE, removePunctuation = TRUE)
-  AnswerTests: expr_identical_to('dtm_control <- list(weighting = weightTf, tolower = TRUE, removeNumbers = TRUE, stopwords = TRUE, removePunctuation = TRUE)')
+  AnswerTests: any_of_exprs('dtm_control <- list(weighting = weightTf, tolower = TRUE, removeNumbers = TRUE, stopwords = TRUE, removePunctuation = TRUE)', 'dtm_control <- list(weighting = weightTf, tolower = TRUE, removeNumbers = TRUE, removePunctuation = TRUE, stopwords = TRUE)')
   Hint: Enter dtm_control <- list(weighting = weightTf, tolower = TRUE, removeNumbers = TRUE, stopwords = TRUE, removePunctuation = TRUE)
 
 - Class: cmd_question
@@ -58,7 +58,7 @@
   Hint: Enter tf_dtm <- DocumentTermMatrix(c(train_pos, train_neg), control = dtm_control)
 
 - Class: cmd_question
-  Output: "First of all, we want to make use of words with high frequencies (> 10) as features to the classifier. To do so, we can use findFreqTerms from tm package on a DocumentTermMatrix."
+  Output: "First of all, we want to make use of words with high frequencies (> 10) as features to the classifier. To do so, we can use findFreqTerms from tm package on a DocumentTermMatrix. Create a variable named freq_terms."
   CorrectAnswer: freq_terms <- findFreqTerms(tf_dtm, lowfreq = 10)
   AnswerTests: expr_identical_to('freq_terms <- findFreqTerms(tf_dtm, lowfreq = 10)')
   Hint: Enter freq_terms <- findFreqTerms(tf_dtm, lowfreq = 10)
@@ -78,8 +78,8 @@
 - Class: cmd_question
   Output: "Create a variable features_df to store tf_dtm in data frame. (Remember to use tbl_df!)"
   CorrectAnswer: features_df <- tbl_df(data.frame(as.matrix(tf_dtm)))
-  AnswerTests: expr_identical_to('features_df <- tbl_df(data.frame(as.matrix(tf_dtm)))')
-  Hint: Enter features_df <- tbl_df(data.frame(as.matrix(tf_dtm)))
+  AnswerTests: any_of_exprs('features_df <- tbl_df(data.frame(as.matrix(tf_dtm)))', 'features_df <- tbl_df(as.matrix(tf_dtm))')
+  Hint: Enter features_df <- tbl_df(as.matrix(tf_dtm))
 
 - Class: cmd_question
   Output: "Let's remove columns with near zero variance with nearZeroVar function from caret! This will reduce the dimensions and make it easier for training. Create a variable named nzv_columns for this."
@@ -94,16 +94,16 @@
   Hint: Enter features_df <- features_df[, -nzv_columns]
 
 - Class: cmd_question
-  Output: "Let's create a variable called model_control to do 5-fold cross validation."
-  CorrectAnswer: model_control <- trainControl(method = 'cv', number = 5)
-  AnswerTests: expr_identical_to('model_control <- trainControl(method = 'cv', number = 5)')
-  Hint: Enter model_control <- trainControl(method = 'cv', number = 5)
+  Output: "Let's create a variable called model_control to do 5-fold cross validation with trainControl."
+  CorrectAnswer: model_control <- trainControl(method = "cv", number = 5)
+  AnswerTests: expr_identical_to('model_control <- trainControl(method = "cv", number = 5)')
+  Hint: Enter model_control <- trainControl(method = "cv", number = 5)
 
 - Class: cmd_question
   Output: "We can now train a model using Naive Bayes algorithm."
-  CorrectAnswer: model <- train(features_df, train_label, method = 'nb', trControl = model_control)
-  AnswerTests: expr_identical_to('model <- train(features_df, train_label, method = 'nb', trControl = model_control)')
-  Hint: Enter model <- train(features_df, train_label, method = 'nb', trControl = model_control)
+  CorrectAnswer: model <- train(features_df, train_label, method = "nb", trControl = model_control)
+  AnswerTests: expr_identical_to('model <- train(features_df, train_label, method = "nb", trControl = model_control)')
+  Hint: Enter model <- train(features_df, train_label, method = "nb", trControl = model_control)
 
 - Class: cmd_question
   Output: "Let's check the predictions of the training data. Create a variable called pred for this."

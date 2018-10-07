@@ -11,7 +11,7 @@
 
 - Class: text
   Output: "In the `data` folder, notice that the data are in the form of text files located the folders `aclImdb/train/neg`, `aclImdb/train/pos`, `aclImdb/test/neg` and `aclImdb/test/pos`."
-  
+
 - Class: text
   Output: "In order to read data in such format, we use `DirSource` to specify the source of the data in form of directory."
 
@@ -38,49 +38,49 @@
   CorrectAnswer: train_neg_tf_dtm <- DocumentTermMatrix(train_neg)
   AnswerTests: expr_identical_to('train_neg_tf_dtm <- DocumentTermMatrix(train_neg)')
   Hint: Enter train_neg_tf_dtm <- DocumentTermMatrix(train_neg)
-  
+
 - Class: cmd_question
   Output: "Take a look at the instance of DocumentTermMatrix that you have created by using `inspect`"
   CorrectAnswer: inspect(train_neg_tf_dtm)
   AnswerTests: expr_identical_to('inspect(train_neg_tf_dtm)')
   Hint: Enter inspect(train_neg_tf_dtm)
-  
+
 - Class: text
   Output: "Notice that the the matrix is very sparse, and this is normal for typical text mining."
-  
+
 - Class: cmd_question
   Output: "Now let's clean up the corpus with some rules. We want to change all the words to the lowercase, remove all the numbers, stopwords and punctuation. You will need to create a `list` called  tf_dtm_control with `tolower`, `removeNumbers`, `stopwords` and `removePunctuation` set as TRUE."
   CorrectAnswer: tf_dtm_control <- list(tolower = TRUE, removeNumbers = TRUE, stopwords = TRUE, removePunctuation = TRUE)
   AnswerTests: expr_identical_to('tf_dtm_control <- list(tolower = TRUE, removeNumbers = TRUE, stopwords = TRUE, removePunctuation = TRUE)')
   Hint: Enter tf_dtm_control <- list(tolower = TRUE, removeNumbers = TRUE, stopwords = TRUE, removePunctuation = TRUE)
-  
+
 - Class: cmd_question
   Output: "Re-create `train_neg_tf_dtm` with `control` set as `tf_dtm_control`."
   CorrectAnswer: train_neg_tf_dtm <- DocumentTermMatrix(train_neg, control = tf_dtm_control)
   AnswerTests: expr_identical_to('train_neg_tf_dtm <- DocumentTermMatrix(train_neg, control = tf_dtm_control)')
   Hint: Enter train_neg_tf_dtm <- DocumentTermMatrix(c(train_pos, train_neg), control = tf_dtm_control)
-  
+
 - Class: cmd_question
   Output: "Inspect train_neg_tf_dtm again."
   CorrectAnswer: inspect(train_neg_tf_dtm)
   AnswerTests: expr_identical_to('inspect(train_neg_tf_dtm)')
   Hint: Use inspect!
-  
+
 - Class: text
   Output: "The matrix is still very sparse, but the number of terms have significantly reduced."
 
 - Class: cmd_question
-  Output: "We can convert tf_dtm to a data frame that consists of the term frequency by using `colSums` on tf_dtm at its matrix form. Name the variable as `tf_freq_df"
+  Output: "We can convert tf_dtm to a data frame that consists of the term frequency by using `colSums` on tf_dtm at its matrix form. Name the variable as `tf_neg_freq_df"
   CorrectAnswer: tf_neg_freq_df <- colSums(as.matrix(train_neg_tf_dtm))
   AnswerTests: expr_identical_to('tf_neg_freq_df <- colSums(as.matrix(train_neg_tf_dtm))')
   Hint: Enter tf_neg_freq_df <- colSums(as.matrix(train_neg_tf_dtm))
-  
+
 - Class: cmd_question
-  Output: "Before we use word cloud on it. Take a look at the data frame. Notice that the terms are in the index. Let's bring the term out as a column and rename it as `word` and the count as `freq`. Overwrite the variable."
+  Output: "Before we use word cloud on it. Take a look at the data frame. Notice that the terms are in the index. Let's bring the term out as a column using tibble's rownames_to_column and rename rowname as `word` and the count as `freq`. Overwrite the variable."
   CorrectAnswer: tf_neg_freq_df <- tbl_df(tf_neg_freq_df) %>% rownames_to_column %>% rename(word = rowname) %>% rename(freq = value)
   AnswerTests: expr_identical_to('tf_neg_freq_df <- tbl_df(tf_neg_freq_df) %>% rownames_to_column %>% rename(word = rowname) %>% rename(freq = value)')
   Hint: Remember to convert to `tbl_df` first. Enter tbl_df(tf_neg_freq_df) %>% rownames_to_column %>% rename(word = rowname) %>% rename(freq = value)
-  
+
 - Class: cmd_question
   Output: "Let's visualise with a word cloud, with minimum frequency as 100."
   CorrectAnswer: wordcloud(words = tf_neg_freq_df$word, freq = tf_neg_freq_df$freq, min.freq = 100)

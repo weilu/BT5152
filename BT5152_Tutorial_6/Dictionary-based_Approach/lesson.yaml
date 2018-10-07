@@ -1,7 +1,77 @@
 - Class: meta
   Course: BT5152 Tutorial 6
   Lesson: Dictionary-based Approach
-  Author: your name goes here
+  Author: Kee Yuan Chuan
   Type: Standard
-  Organization: your organization's name goes here
+  Organization: National University of Singapore
   Version: 2.4.3
+
+- Class: text
+  Output: "In this lesson, we are going do simple sentiment analysis using the Dictionary approach on the same movies review dataset, which you should have. Otherwise, go through the Word Cloud lesson first."
+
+- Class: cmd_question
+  Output: 'Load the negative training dataset as train_neg using VCorpus and DirSource.'
+  CorrectAnswer: train_neg <- VCorpus(DirSource("data/aclImdb/train/neg"))
+  AnswerTests: expr_identical_to('train_neg <- VCorpus(DirSource("data/aclImdb/train/neg"))')
+  Hint: Enter train_neg <- VCorpus(DirSource("data/aclImdb/train/neg"))
+
+- Class: cmd_question
+  Output: 'Create a simple term frequency based DocumentTermMatrix on train_neg as tf_dtm.'
+  CorrectAnswer: tf_dtm <- DocumentTermMatrix(train_neg)
+  AnswerTests: expr_identical_to('tf_dtm <- DocumentTermMatrix(train_neg)')
+  Hint: Enter tf_dtm <- DocumentTermMatrix(train_neg)
+
+- Class: cmd_question
+  Output: 'Now, we will need to obtain the sentiment data from General Inquirer by entering install.packages("tm.lexicon.GeneralInquirer", repos="http://datacube.wu.ac.at", type="source")'
+  CorrectAnswer: install.packages("tm.lexicon.GeneralInquirer", repos="http://datacube.wu.ac.at", type="source")
+  AnswerTests: expr_identical_to('install.packages("tm.lexicon.GeneralInquirer", repos="http://datacube.wu.ac.at", type="source")')
+
+- Class: cmd_question
+  Output: 'Load the library using require'
+  CorrectAnswer: require("tm.lexicon.GeneralInquirer")
+  AnswerTests: expr_identical_to('require("tm.lexicon.GeneralInquirer")')
+  Hint: Enter require("tm.lexicon.GeneralInquirer")
+
+- Class: cmd_question
+  Output: Create a variable named positive_words to store the positive words in the General Inquirer using terms_in_General_Inquirer_categories. You might want to check what is the column name for positive sentiment.
+  CorrectAnswer: positive_words <- terms_in_General_Inquirer_categories("Positiv")
+  AnswerTests: expr_identical_to('positive_words <- terms_in_General_Inquirer_categories("Positiv")')
+  Hint: Enter positive_words <- terms_in_General_Inquirer_categories("Positiv")
+
+- Class: cmd_question
+  Output: Do the same for negative sentiment by creating a variable named negative_words
+  CorrectAnswer: negative_words <- terms_in_General_Inquirer_categories("Negativ")
+  AnswerTests: expr_identical_to('negative_words <- terms_in_General_Inquirer_categories("Negativ")')
+  Hint: Enter negative_words <- terms_in_General_Inquirer_categories("Negativ")
+
+- Class: text
+  Output: "We will use tm_term_score on a DocumentTermMatrix to compute the times a document has a word appearing in the respective sentiment dataset. You might want to look at its documentation."
+  CorrectAnswer: ?tm_term_score
+  AnswerTests: expr_identical_to('?tm_term_score')
+
+- Class: cmd_question
+  Output: 'Use tm_term_score on tf_dtm with the positive words and store the score as p_scores.'
+  CorrectAnswer: p_scores <- tm_term_score(tf_dtm, positive_words)
+  AnswerTests: expr_identical_to('p_scores <- tm_term_score(tf_dtm, positive_words)')
+  Hint: Enter p_scores <- tm_term_score(tf_dtm, positive_words)
+
+- Class: cmd_question
+  Output: 'Now, do the same with the negative words as n_scores.'
+  CorrectAnswer: n_scores <- tm_term_score(tf_dtm, negative_words)
+  AnswerTests: expr_identical_to('n_scores <- tm_term_score(tf_dtm, negative_words)')
+  Hint: Enter n_scores <- tm_term_score(tf_dtm, negative_words)
+
+- Class: cmd_question
+  Output: 'In order to get the net score, we simply subtract the positive score with the negative score. Named this variable as net_scores.'
+  CorrectAnswer: net_scores <- p_scores - n_scores
+  AnswerTests: expr_identical_to('net_scores <- p_scores - n_scores')
+  Hint: Enter net_scores <- p_scores - n_scores
+
+- Class: cmd_question
+  Output: "Create a data frame called doc_sentiment_df to have 2 columns: document and sentiment, using tibble's rownames_to_column and rename the columns respectively."
+  CorrectAnswer: doc_sentiment_df <- tbl_df(net_scores) %>% rownames_to_column %>% rename(document = rowname) %>% rename(sentiment = value)
+  AnswerTests: expr_identical_to('doc_sentiment_df <- tbl_df(net_scores) %>% rownames_to_column %>% rename(document = rowname) %>% rename(sentiment = value)')
+  Hint: Enter doc_sentiment_df <- tbl_df(net_scores) %>% rownames_to_column %>% rename(document = rowname) %>% rename(sentiment = value)
+
+- Class: text
+  Output: 'Now we have the sentiment values on a negative sentiment data set. You should look at the distribution of the sentiment scores as a histogram to see if it makes sense after this lesson.'
