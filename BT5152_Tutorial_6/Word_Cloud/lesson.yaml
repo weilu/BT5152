@@ -58,7 +58,7 @@
   Output: "Re-create `train_neg_tf_dtm` with `control` set as `tf_dtm_control`."
   CorrectAnswer: train_neg_tf_dtm <- DocumentTermMatrix(train_neg, control = tf_dtm_control)
   AnswerTests: expr_identical_to('train_neg_tf_dtm <- DocumentTermMatrix(train_neg, control = tf_dtm_control)')
-  Hint: Enter train_neg_tf_dtm <- DocumentTermMatrix(c(train_pos, train_neg), control = tf_dtm_control)
+  Hint: Enter train_neg_tf_dtm <- DocumentTermMatrix(train_neg, control = tf_dtm_control)
 
 - Class: cmd_question
   Output: "Inspect train_neg_tf_dtm again."
