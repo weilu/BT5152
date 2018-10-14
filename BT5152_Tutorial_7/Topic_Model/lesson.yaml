@@ -1,0 +1,88 @@
+- Class: meta
+  Course: BT5152 Tutorial 7
+  Lesson: Topic Model
+  Author: Kee Yuan Chuan
+  Type: Standard
+  Organization: National University of Singapore
+  Version: 2.4.3
+
+- Class: text
+  Output: In this class, we are going to build a topic model to discover the topics covered in a corpus.
+  
+- Class: text
+  Output: The library we are using today is topicmodels, which has been loaded for you when you start this lesson, using `library(topicmodels)`.
+  
+- Class: cmd_question
+  Output: "Now, let's load a news dataset called AssociatedPress. It comes with topicmodels, so you don't have to download manually."
+  CorrectAnswer: data("AssociatedPress")
+  AnswerTests: expr_identical_to('data("AssociatedPress")')
+  Hint: Use data function.
+
+- Class: text
+  Output: AssociatedPress is a DocumentTermMatrix consisting of over 2000 documents. 
+  
+- Class: cmd_question
+  Output: Although LDA is an unsupervised learning algorithm, we still need to partition the dataset to a training and test set (also known as held-out documents). Create a variable named train_idx with 90% of the indices.
+  CorrectAnswer: train_idx <- sample(AssociatedPress$nrow * 0.9)
+  AnswerTests: expr_identical_to('train_idx <- sample(AssociatedPress$nrow * 0.9)')
+  Hint: DocumentTermMatrix has the nrow attribute. You can obtain the indices by entering sample(AssociatedPress$nrow * 0.9).
+
+- Class: cmd_question
+  Output: Use train_idx to create the training data named train.
+  CorrectAnswer: train <- AssociatedPress[train_idx,]
+  AnswerTests: expr_identical_to('train <- AssociatedPress[train_idx,]')
+  Hint: Enter train <- AssociatedPress[train_idx,]
+  
+- Class: cmd_question
+  Output: We also need to partition the held-out dataset. Name it as test.
+  CorrectAnswer: test <- AssociatedPress[-train_idx,]
+  AnswerTests: expr_identical_to('test <- AssociatedPress[-train_idx,]')
+  Hint: Enter test <- AssociatedPress[-train_idx,]
+
+- Class: cmd_question
+  Output: Before we train the topic model, you should check out the documentation of LDA.
+  CorrectAnswer: ?LDA
+  AnswerTests: expr_identical_to('?LDA')
+  Hint: Use ?LDA
+  
+- Class: cmd_question
+  Output: "Let's train a topic model of 50 topics and using the Gibbs sampling method to fit the model. Named the variable model. This will take some time."
+  CorrectAnswer: model <- LDA(train, k = 50, method = "Gibbs")
+  AnswerTests: expr_identical_to('model <- LDA(train, k = 50, method = "Gibbs")')
+  Hint: Enter model <- LDA(train, k = 50, method = "Gibbs")
+
+- Class: text
+  Output: We are just using the default parameters as of now. You should know how to tune the optimisation method (in this case we used Gibbs sampling) via LDAControl. For this, you have to read page 8 of this document (https://cran.r-project.org/web/packages/topicmodels/vignettes/topicmodels.pdf).
+  
+- Class : cmd_question
+  Output: Now, we need to evaluate against the test set using perplexity function. We set use_theta and estimate_theta to TRUE. Named this as perplexity.
+  CorrectAnswer: perplexity <- perplexity(model, test, use_theta = TRUE, estimate_theta = TRUE)
+  AnswerTests: expr_identical_to('perplexity <- perplexity(model, test, use_theta = TRUE, estimate_theta = TRUE)')
+  Hint: Enter perplexity <- perplexity(model, test, use_theta = TRUE, estimate_theta = TRUE)
+
+- Class: text
+  Output: Perplexity is only useful when comparing to other models, so after the lesson, train another few more models and compare the perplexities.
+  
+- Class: cmd_question
+  Output: We should look at what are the top words by topic. To do this, we use terms function.
+  CorrectAnswer: terms(model, 5)
+  AnswerTests: expr_uses_func('terms')
+  Hint: Enter terms(model, k), where k is a positive integer.
+  
+- Class: cmd_question
+  Output: We should also look at what are the top 5 topics by document. To do this, we use topic function.
+  CorrectAnswer: t(topics(model, 5))
+  AnswerTests: expr_identical_to('t(topics(model, 5))')
+  Hint: While topic(model, k) is correct, you probably can't see any useful information from the output. you will be able to by transposing the output. Enter t(topics(model, 5))).
+  
+- Class: cmd_question
+  Output: For the test set, you will also want to obtain the word-topic and document-topic distributions. To do that, you need to use posterior function. Named your variable test_output.
+  CorrectAnswer: test_output <- posterior(model, test)
+  AnswerTests: expr_identical_to('test_output <- posterior(model, test)')
+  Hint: Enter test_output <- posterior(model, test)
+
+- Class: text
+  Output: Looking at test_output, you will see terms and topics attributes.
+  
+- Class: text
+  Output: That's it for topic modelling. You should train more models and look at how the parameters will result in different models. As this is an unsupervised algorithm, you will not be able to evaluate easily with just numbers.
