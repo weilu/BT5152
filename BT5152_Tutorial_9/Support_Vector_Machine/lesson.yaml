@@ -1,0 +1,100 @@
+- Class: meta
+  Course: BT5152 Tutorial 9
+  Lesson: Support Vector Machine
+  Author: Kee Yuan Chuan
+  Type: Standard
+  Organization: National University of Singapore
+  Version: 2.4.3
+
+- Class: text
+  Output: In this lesson, we are going to use Support Vector Machine (SVM) to perform classification.
+  
+- Class: cmd_question
+  Output: The data has been loaded for you as train_data and you might want to look at it first.
+  CorrectAnswer: train_data
+  AnswerTests: any_of_exprs(c('train_data', 'View(train_data)'))
+  Hint: Enter train_data
+  
+- Class: text
+  Output: 'Note that for classification problems, you will need to make the dependent variable as factor, which has been done for you in this case. When you load the data, you can specify the column classes via the colClasses arguments. For example, in this case, a vector of c("numeric", "numeric", "factor") is passed to colClasses.'
+  
+- Class: cmd_question
+  Output: We are going to use e1071 package for the SVM algorithms. Load this library.
+  CorrectAnswer: library(e1071)
+  AnswerTests: any_of_exprs(c('library(e1071)', 'require(e1071)'))
+  Hint: Use the function library to load e1071
+  
+- Class: cmd_question
+  Output: We can train a SVM classifier using the function `svm`. You might want to check out its documentation first.
+  CorrectAnswer: ?svm
+  AnswerTests: expr_identical_to('?svm')
+  Hint: Enter ?svm
+  
+- Class: cmd_question
+  Output: Now, we need to split the data to training and validation sets. For simplicity purpose, we use the first 1500 rows as training and the remaining as validation. Name the training set as train_t.
+  CorrectAnswer: train_t <- train_data[1:1500,]
+  AnswerTests: any_of_exprs(c('train_t <- train_data[1:1500,]'))
+  Hint: Enter train_t <- train_data[1:1500,]
+  
+- Class: cmd_question
+  Output: Next, create the validation set as train_v.
+  CorrectAnswer: train_v <- train_data[1501:2000,]
+  AnswerTests: any_of_exprs(c('train_v <- train_data[1501:2000,]'))
+  Hint: Enter train_v <- train_data[1501:2000,]
+  
+- Class: cmd_question
+  Output: "Let's train a linear SVM model. Name this model as model.linear."
+  CorrectAnswer: model.linear <- svm(y ~ ., data = train_t, kernel = "linear")
+  AnswerTests: expr_identical_to('model.linear <- svm(y ~ ., data = train_t, kernel = "linear")')
+  Hint: 'Enter model.linear <- svm(y ~ ., data = train_t, kernel = "linear")'
+  
+- Class: cmd_question
+  Output: We can visualise the output of the SVM model and how it fits the data by using plot function
+  CorrectAnswer: plot(model.linear, train_t)
+  AnswerTests: expr_identical_to("plot(model.linear, train_t)")
+  Hint: Enter plot(model.linear, train_t)
+
+- Class: text
+  Output: Looking at the plot, you can see that a linear kernel is not possible to separate the 2 classes.
+
+- Class: cmd_question
+  Output: Perform a prediction of the validation dataset. Name the variable as pred_v.
+  CorrectAnswer: pred_v <- predict(model.linear, train_v)
+  AnswerTests: expr_identical_to("pred_v <- predict(model.linear, train_v)")
+  Hint: Enter pred_v = predict(model.linear, train_v)
+
+- Class: cmd_question
+  Output: We need to see how the prediction performs. Use a confusion matrix to visualise it.
+  CorrectAnswer: confusionMatrix(pred_v, train_v$y)
+  AnswerTests: expr_identical_to("confusionMatrix(pred_v, train_v$y)")
+  Hint: Enter confusionMatrix(pred_v, train_v$y)
+  
+- Class: text
+  Output: We have learnt in the lecture that linear SVM has no parameter that we can tune, but we can set the cost of misclassification.
+  
+- Class: cmd_question
+  Output: "Create another linear SVM model with cost of misclassification set as 10. Name this model as model.linear.cost"
+  CorrectAnswer: model.linear.cost <- svm(y ~ ., data = train_t, kernel = "linear", cost = 10)
+  AnswerTests: expr_identical_to('model.linear.cost <- svm(y ~ ., data = train_t, kernel = "linear", cost = 10)')
+  Hint: 'Enter model.linear.cost <- svm(y ~ ., data = train_t, kernel = "linear", cost = 10)'
+  
+- Class: cmd_question
+  Output: "Let's look at the plot to see if there is any difference as compared to the previous model."
+  CorrectAnswer: plot(model.linear.cost, train_t)
+  AnswerTests: expr_identical_to("plot(model.linear.cost, train_t)")
+  Hint: Enter plot(model.linear.cost, train_t)
+
+- Class: cmd_question
+  Output: "Let's try a more advanced SVM kernel. Train a SVM classifier that uses the radial kernel, name the model as model.radial. Recall that a radial kernel has 1 parameter called gamma, set it as 1."
+  CorrectAnswer: model.radial <- svm(y ~ ., data = train_t, kernel = "radial", gamma = 1)
+  AnswerTests: expr_identical_to('model.radial <- svm(y ~ ., data = train_t, kernel = "radial", gamma = 1)')
+  Hint: 'Enter model.radial <- svm(y ~ ., data = train_t, kernel = "radial", gamma = 1)'
+  
+- Class: cmd_question
+  Output: "Finally, let's look at the classification plot of this model with radial kernel."
+  CorrectAnswer: plot(model.radial, train_t)
+  AnswerTests: expr_identical_to("plot(model.radial, train_t)")
+  Hint: Enter plot(model.radial, train_t)
+
+- Class: text
+  Output: After this lesson, you should try out training polynomial and sigmoid SVM classifiers and plot the classification plots to see how they look like. Remember that these kernels have parameters that you can tune and you should be tuning them to make the best out of the models.
