@@ -1,0 +1,77 @@
+- Class: meta
+  Course: BT5152 Tutorial 10
+  Lesson: Imbalanced Dataset
+  Author: Kee Yuan Chuan
+  Type: Standard
+  Organization: National University of Singapore
+  Version: 2.4.3
+  
+- Class: text
+  Output: In this lesson, we are going to use sampling techniques to deal with imbalanced datasets. Libraries such as caret and dplyr has been loaded for you.
+  
+- Class: cmd_question
+  Output: We are going to use the Breast Cancer dataset from University of Wisconsin. To load the dataset we can load it using the BreastCancer function from mlbench library, which has been installed for you.
+  CorrectAnswer: data(BreastCancer, package = "mlbench")
+  AnswerTests: any_of_exprs(c('data(BreastCancer, package = "mlbench")', 'data(BreastCancer)'))
+  Hint: Use the data function on BreastCancer function.
+  
+- Class: cmd_question
+  Output: "Create a new data frame called data by removing rows with missing values and Id column."
+  CorrectAnswer: data <- BreastCancer[complete.cases(BreastCancer),] %>% select(-Id)
+  AnswerTests: expr_identical_to('data <- BreastCancer[complete.cases(BreastCancer),] %>% select(-Id)')
+  Hint: Enter data <- BreastCancer[complete.cases(BreastCancer),] %>% select(-Id)
+  
+- Class: cmd_question
+  Output: "Let's do a count for each label to see the imbalance by grouping the class and summarising with n() to count."
+  CorrectAnswer: data %>% group_by(Class) %>% summarise(n())
+  AnswerTests: expr_identical_to('data %>% group_by(Class) %>% summarise(n())')
+  Hint: Enter data %>% group_by(Class) %>% summarise(n())
+
+- Class: text
+  Output: We can see that benign class has more sample than malignant class.
+
+- Class: cmd_question
+  Output: "Let's use 70% of the data as training data. Name the indices as train_idx."
+  CorrectAnswer: train_idx <- createDataPartition(data$Class, p = 0.7, list = FALSE)
+  AnswerTests: expr_identical_to('train_idx <- createDataPartition(data$Class, p = 0.7, list = FALSE)')
+  Hint: train_idx <- createDataPartition(data$Class, p = 0.7, list = FALSE)
+  
+- Class: cmd_question
+  Output: Create a variable named train for the training data
+  CorrectAnswer: train <- data[train_idx,]
+  AnswerTests: expr_identical_to('train <- data[train_idx,]')
+  Hint: train <- data[train_idx,]
+  
+- Class: cmd_question
+  Output: And another variable named test for the test data
+  CorrectAnswer: test <- data[-train_idx,]
+  AnswerTests: expr_identical_to('test <- data[-train_idx,]')
+  Hint: test <- data[-train_idx,]
+
+- Class: cmd_question
+  Output: We are going to use Random Forest with 5-fold cross validation on the training data to predict the Class using all other variables. As usual, you will need to scale and center the independent variables as well. Named the variable as model.
+  CorrectAnswer: model <- train(Class ~ ., data = train, method = "rf", preProcess = c("scale", "center"), trControl = trainControl(method = "cv", number = 5))
+  AnswerTests: any_of_exprs('model <- train(Class ~ ., data = train, method = "rf", preProcess = c("scale", "center"), trControl = trainControl(method = "cv", number = 5))', 'model <- train(Class ~ ., data = train, method = "rf", trControl = trainControl(method = "cv", number = 5)), preProcess = c("scale", "center")')
+  Hint: Don't worry that you did not get this right as there are many ways to write this line of code and it is hard to cater to all variants for it in swirl. One of the accepted answer is model <- train(Class ~ ., data = train, method = "rf", preProcess = c("scale", "center"), trControl = trainControl(method = "cv", number = 5))
+  
+- Class: cmd_question
+  Output: Use confusionMatrix to see how the test prediction performs. Use the predict function to predict the test data and derive the confusion matrix in one step.
+  CorrectAnswer: confusionMatrix(predict(model, test), test$Class)
+  AnswerTests: expr_identical_to('confusionMatrix(predict(model, test), test$Class)')
+  Hint: Instead of creating new variable, we can derive the confusion matrix in one line of code by combining predict and confusionMatrix. Enter confusionMatrix(predict(model, test), test$Class)
+  
+- Class: cmd_question
+  Output: We can easily perform down/up/SMOTE sampling by providing "down", "up" and "smote" respectively, as a value to key `sampling` in the trainControl. Now create a down-sampling 5-fold cross validation Random Forest model called model.down.
+  CorrectAnswer: model.down <- train(Class ~ ., data = train, method = "rf", preProcess = c("scale", "center"), trControl = trainControl(method = "cv", number = 5, sampling = "down"))
+  AnswerTests: any_of_exprs('model.down <- train(Class ~ ., data = train, method = "rf", preProcess = c("scale", "center"), trControl = trainControl(method = "cv", number = 5, sampling = "down"))', 'model.down <- train(Class ~ ., data = train, method = "rf", trControl = trainControl(method = "cv", number = 5, sampling = "down"), preProcess = c("scale", "center"))', 'model.down <- train(Class ~ ., data = train, method = "rf", preProcess = c("scale", "center"), trControl = trainControl(sampling = "down", method = "cv", number = 5))')
+  Hint: Don't worry that you did not get this right as there are many ways to write this line of code and it is hard to cater to all variants for it in swirl. One of the accepted answer is model <- train(Class ~ ., data = train, method = "rf", preProcess = c("scale", "center"), trControl = trainControl(method = "cv", number = 5, sampling = "down"))
+
+- Class: cmd_question
+  Output: Use confusionMatrix again with model.down to see how the test prediction performs.\
+  CorrectAnswer: confusionMatrix(predict(model.down, test), test$Class)
+  AnswerTests: expr_identical_to('confusionMatrix(predict(model.down, test), test$Class)')
+  Hint: Instead of creating new variable, we can derive the confusion matrix in one line of code by combining predict and confusionMatrix. Enter confusionMatrix(predict(model.down, test), test$Class)
+  
+- Class: text
+  Output: We have completed this lesson by running down-sampling on the dataset. The performance difference is marginal at best as Random Forest can perform very well on this dataset. After this lesson, you should try to create other models with different sampling techniques and compare the performance.
+  
