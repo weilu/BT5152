@@ -50,9 +50,9 @@
 
 - Class: cmd_question
   Output: We are going to use Random Forest with 5-fold cross validation on the training data to predict the Class using all other variables. As usual, you will need to scale and center the independent variables as well. Named the variable as model.
-  CorrectAnswer: model <- train(Class ~ ., data = train, method = "rf", preProcess = c("scale", "center"), trControl = trainControl(method = "cv", number = 5))
-  AnswerTests: any_of_exprs('model <- train(Class ~ ., data = train, method = "rf", preProcess = c("scale", "center"), trControl = trainControl(method = "cv", number = 5))', 'model <- train(Class ~ ., data = train, method = "rf", trControl = trainControl(method = "cv", number = 5)), preProcess = c("scale", "center")')
-  Hint: Don't worry that you did not get this right as there are many ways to write this line of code and it is hard to cater to all variants for it in swirl. One of the accepted answer is model <- train(Class ~ ., data = train, method = "rf", preProcess = c("scale", "center"), trControl = trainControl(method = "cv", number = 5))
+  CorrectAnswer: model <- train(Class ~ ., data = train, method = "rf", trControl = trainControl(method = "cv", number = 5))
+  AnswerTests: expr_identical_to('model <- train(Class ~ ., data = train, method = "rf", trControl = trainControl(method = "cv", number = 5))')
+  Hint: Don't worry that you did not get this right as there are many ways to write this line of code and it is hard to cater to all variants for it in swirl. The accepted answer is model <- train(Class ~ ., data = train, method = "rf", trControl = trainControl(method = "cv", number = 5))
   
 - Class: cmd_question
   Output: Use confusionMatrix to see how the test prediction performs. Use the predict function to predict the test data and derive the confusion matrix in one step.
@@ -62,9 +62,9 @@
   
 - Class: cmd_question
   Output: We can easily perform down/up/SMOTE sampling by providing "down", "up" and "smote" respectively, as a value to key `sampling` in the trainControl. Now create a down-sampling 5-fold cross validation Random Forest model called model.down.
-  CorrectAnswer: model.down <- train(Class ~ ., data = train, method = "rf", preProcess = c("scale", "center"), trControl = trainControl(method = "cv", number = 5, sampling = "down"))
-  AnswerTests: any_of_exprs('model.down <- train(Class ~ ., data = train, method = "rf", preProcess = c("scale", "center"), trControl = trainControl(method = "cv", number = 5, sampling = "down"))', 'model.down <- train(Class ~ ., data = train, method = "rf", trControl = trainControl(method = "cv", number = 5, sampling = "down"), preProcess = c("scale", "center"))', 'model.down <- train(Class ~ ., data = train, method = "rf", preProcess = c("scale", "center"), trControl = trainControl(sampling = "down", method = "cv", number = 5))')
-  Hint: Don't worry that you did not get this right as there are many ways to write this line of code and it is hard to cater to all variants for it in swirl. One of the accepted answer is model <- train(Class ~ ., data = train, method = "rf", preProcess = c("scale", "center"), trControl = trainControl(method = "cv", number = 5, sampling = "down"))
+  CorrectAnswer: model.down <- train(Class ~ ., data = train, method = "rf", trControl = trainControl(method = "cv", number = 5, sampling = "down"))
+  AnswerTests: expr_identical_to('model.down <- train(Class ~ ., data = train, method = "rf", trControl = trainControl(method = "cv", number = 5, sampling = "down"))')
+  Hint: Don't worry that you did not get this right as there are many ways to write this line of code and it is hard to cater to all variants for it in swirl. One of the accepted answer is model.down <- train(Class ~ ., data = train, method = "rf", trControl = trainControl(method = "cv", number = 5, sampling = "down"))
 
 - Class: cmd_question
   Output: Use confusionMatrix again with model.down to see how the test prediction performs.\
